@@ -21,3 +21,8 @@
     - first we tell the bios that we want to use tty mode by putting the `0x0e` in `ah` (higher part of ax register)
     - then we store the character that we want to print in `al` (lower part of ax register)
     - finally we raise a interrup 0x10 which is general interrupt for video services
+
+# Boot-Sector memory
+ - BIOS loads the Boot-Sector at `0x7C00` and transfers the control to 0x7C00, from where the bootloader code starts running (see the image below)
+ - `org 0x7c00` - assemblers defines a **global offset** for every memory location 
+![Alt text](/images/memory_layout.png)

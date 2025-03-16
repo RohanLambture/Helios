@@ -1,15 +1,15 @@
-mov ah , 0x0e ; to use the tty mode
-mov al , 'H'
-int 0x10 ; raises the 0x10 interrupt
-mov al , 'e' 
+[org 0x7c00]
+mov ah,0x0e
+
+mov al,"4"
 int 0x10
-mov al , 'l'
-int 0x10
-int 0x10 
-mov al ,'o'
+mov al,[the_secret]
 int 0x10
 
 jmp $ ; jump to current address infinitely
+
+the_secret:
+    db "X"
 
 times 510-($-$$) db 0
 dw 0xaa55
