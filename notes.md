@@ -64,4 +64,5 @@
 >       - `BX` = lower 16 bits of `EBX`
 >       - `CX` = lower 16 bits of `ECX`
 >       - `DX` = lower 16 bits of `EDX`
-![Alt text](/images/registers.jpg)
+>
+>  ![Alt text](/images/registers.jpg)
