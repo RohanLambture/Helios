@@ -60,9 +60,9 @@
 > # General-Purpose registers in x86 assembly 
 >   - `EAX` ,`EBX`,`ECX`,`EDX` are considers **general-purpose registers**
 >   - Each 32-bit registers can be broken down into a lower 16-bit portion 
->       - `AX` = lower 16 bits of `EAX`
->       - `BX` = lower 16 bits of `EBX`
->       - `CX` = lower 16 bits of `ECX`
->       - `DX` = lower 16 bits of `EDX`
+>       - `AX(Accumulator Register)` = lower 16 bits of `EAX`
+>       - `BX(Base Register)` = lower 16 bits of `EBX`
+>       - `CX(Count Register)` = lower 16 bits of `ECX`
+>       - `DX(Data Register)` = lower 16 bits of `EDX`
 >
 >  ![Alt text](/images/registers.jpg)
