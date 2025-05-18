@@ -4,11 +4,17 @@ mov bx ,msg ;store msg in bx
 call print
 
 call newline
+call carriage_return
 
 mov bx , bye 
 call print
 
 call newline
+call carriage_return
+
+mov dx,0x1234
+call print_hex
+
 
 jmp $
 
