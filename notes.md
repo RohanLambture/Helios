@@ -66,3 +66,32 @@
 >       - `DX(Data Register)` = lower 16 bits of `EDX`
 >
 >  ![Alt text](/images/registers.jpg)
+
+# Function Calling & Printing
+  - `call` vs `jmp` : if you want to use `ret` to return to parent function use `call`.
+  - `db 'msg', 0` : for creating a variable a `string = "msg"` terminated by null character.
+    > Note : "msg" and 'msg' are interchangeable 
+  - `%include "file.asm"`: assembler’s preprocessor reads contents of file and insert it in place as if that file’s source lines were written directly in the current assembly file 
+  - `pusha` and `popa` are used to used to save and restore the full set of general-purpose registers onto and from the stack, respectively 
+  - `0x0a` is for newline character.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
