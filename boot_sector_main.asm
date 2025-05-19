@@ -1,31 +1,37 @@
-[org 0x7c00] ; global offset
+mov ah,0x0e
 
-mov bx ,msg ;store msg in bx 
-call print
-
-call newline
-call carriage_return
-
-mov bx , bye 
-call print
+mov al,[msg]
+int 0x10
 
 call newline
 call carriage_return
 
-mov dx,0x1234
-call print_hex
+mov bx,0x7c0
+mov ds,bx
 
+mov al,[msg]
+int 0x10
+
+call newline
+call carriage_return
+
+mov al,[es:msg]
+int 0x10
+
+call newline
+call carriage_return
+
+mov bx,0x7c0
+mov es,bx
+mov al,[es:msg]
+int 0x10
 
 jmp $
 
-msg:
-        db "Rohan",0
-bye:
-        db "Bye!",0
-
-;include other assembly files
 %include"boot_sector_print.asm"
 
-;MBR or magic number 
+msg:
+	db "X"
+
 times 510-($-$$) db 0
 dw 0xaa55
