@@ -12,7 +12,7 @@
   - this mode/function is used to print a single character on the screen and then advance the cursor to next position
   - Enabling the tty mode and printing the character
 
-    ``` asm
+    ``` nasm
         mov ah , 0x0e
         mov al , 'H'
         int 0x10
@@ -41,13 +41,13 @@
   - `bp` register stores the base address (bottom) of stack ,and `sp` stores the top.
   - As x86 is little endian, the stack grows downward from `bp` (i.e `sp` gets decreased)
   - Setting up the stack
-    ```asm
+    ```nasm
       mov bp, 0x8000
       mov sp ,bp
     ```
     - `mov bp , 0x8000` sets 0x8000 in bp (i.e. the the base address of stack)
     - ` mov sp , bp` as initially the stack it empty so , bottom and top address is same
-    ```
+    ```nasm
       push 'A'
       pop bx
       mov al ,bl
@@ -103,7 +103,7 @@
 
      - `mov al,[msg]` won't work without applying offset 0x7c0 (where the bootloader is loaded)
      - `[msg]` is just offset from 0x7c0
-     ```
+     ```nasm
      mov bx,0x7c0
      mov ds, bx
      ```
