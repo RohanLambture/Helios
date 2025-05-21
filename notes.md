@@ -110,7 +110,17 @@
      -  Because of this all memory references will be offset by 'ds'
      - ` mov al,[es:msg]`:es is used as base for memory access and `es` is also starts at 0 therefore won't work
 
+# Logical Address vs Linear Address
+  - ` Logical address = (segment_selector:offset)`
+	- `mov ax,[msg]` for this instruction , `[msg]` is just offset with base `ds`.So `ax = ds:msg`
+	- `ax = ds:msg` is the Logical address
+  - `Linear address = descriptor_base+offset`
+	- In protected mode, each segment selector(eg `ds`) has an entry in GDT , which contains the base and limit .If `offset <=limit` then cpu computes linear address
+	- In `flat memory` , OS arranges each segment selector has `base = 0` and `limit = 0xFF...(upper limit)` hence `linear address = offset `.So logical address's offset is linear address directly.
+
 > # Flat-Memory model
 >   - Most C compilers assume flat-memory model
 >   - In this model, all segments points to the same base ie 0 , have limit of 4GB for 32 bit-mode.
 >   - Note that this is not actual physical address but logical address/linear address only which then converted by MMU(Memory Mangement Unit).This ensures isolation between processes.
+
+# Disk access using the BIOS (INT 13h)
