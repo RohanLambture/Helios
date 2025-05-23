@@ -1,37 +1,33 @@
-mov ah,0x0e
+[org 0x7c00]
 
-mov al,[msg]
-int 0x10
+;create a stack
+mov bp,0x8000
+mov sp ,bp
 
+mov bx,0x9000 ;data buffer for storing the data from disks
+mov dh ,2     ;number of sectors to read (sector 2, sector 3)
+; the bios sets 'dl'
+
+call disk_read
+
+mov dx , [0x9000]
+
+call print_hex
 call newline
-call carriage_return
 
-mov bx,0x7c0
-mov ds,bx
+mov dx, [0x9000+512]
 
-mov al,[msg]
-int 0x10
-
+call print_hex
 call newline
-call carriage_return
-
-mov al,[es:msg]
-int 0x10
-
-call newline
-call carriage_return
-
-mov bx,0x7c0
-mov es,bx
-mov al,[es:msg]
-int 0x10
 
 jmp $
 
 %include"boot_sector_print.asm"
+%include"boot_sector_disk.asm"
 
-msg:
-	db "X"
 
 times 510-($-$$) db 0
 dw 0xaa55
+
+times 256 dw 0xdada
+times 256 dw 0xabcd

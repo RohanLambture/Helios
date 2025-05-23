@@ -24,7 +24,7 @@
 
 # Boot-Sector memory
   - BIOS loads the Boot-Sector at `0x7C00` and transfers the control to 0x7C00, from where the bootloader code starts running (see the image below)
-  - `org 0x7c00` - assemblers defines a **global offset** for every memory location
+  - `org 0x7c00` - assemblers defines a **global offset** for every memory location , therefore all the memory address are calculated relative to `0x7c00`
 ![Alt text](/images/memory_layout.png)
 
 
