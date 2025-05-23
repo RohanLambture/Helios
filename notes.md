@@ -31,7 +31,7 @@
 > # Boot Process
 >   - On powering on the computer, the system's firmware is activated. (Firmware- BIOS,EFI,UEFI)
 >   - Firmware runs the `POST (Power-on self test)` which is diagnoses the hardware.
->   - After that , firmware looks for bootable device, which is usually placed at `Cylinder 0, Head 0 , sector 1/0` depending upon CHS / LBA addaressing mode respectively.
+>   - After that , firmware looks for bootable device, which is usually placed at `Cylinder 0, Head 0 , sector 1/0` depending upon CHS / LBA addressing mode respectively.
 >   - Firmware reads boot-sector from bootable device and loads it 512 bytes in RAM at address `0x7C00`
 >   - Transfer the control to `0x7C00` which is `boot-loader`
 >   - Boot-loader does further loading such loading a larger bootloader , switch cpu from real mode to protected mode etc
@@ -45,7 +45,7 @@
       mov bp, 0x8000
       mov sp ,bp
     ```
-    - `mov bp , 0x8000` sets 0x8000 in bp (i.e. the the base address of stack)
+    - `mov bp , 0x8000` sets 0x8000 in bp (i.e. the base address of stack)
     - ` mov sp , bp` as initially the stack it empty so , bottom and top address is same
     ```nasm
       push 'A'
@@ -76,9 +76,9 @@
   - `0x0a` is for newline character.
   - `ror dx,4` : rotates the `dx` register to right by 4 bits
 
-# Segmenation
+# Segmentation
   - Real Mode
-    - Logical address is in the form `segment:offset` . This is traslated to physical address using equation `Physical address = (segment << 4 ) + offset `
+    - Logical address is in the form `segment:offset` . This is translated to physical address using equation `Physical address = (segment << 4 ) + offset `
 
   - Protected Mode
     - Logical address is `segment_selector:offset`.
@@ -121,7 +121,7 @@
 > # Flat-Memory model
 >   - Most C compilers assume flat-memory model
 >   - In this model, all segments points to the same base ie 0 , have limit of 4GB for 32 bit-mode.
->   - Note that this is not actual physical address but logical address/linear address only which then converted by MMU(Memory Mangement Unit).This ensures isolation between processes.
+>   - Note that this is not actual physical address but logical address/linear address only which then converted by MMU(Memory Management Unit).This ensures isolation between processes.
 
 # Disk access using the BIOS (INT 13h)
   - INT 0x13 is a BIOS interrupt service that provides disk I/O operations.
