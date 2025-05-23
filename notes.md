@@ -152,6 +152,7 @@
   mov bp, 0x8000
   mov sp, bp
 
+  ; set up data buffer es:bx= 0x9000
   mov bx, 0x9000
   mov dh, 2
 
@@ -190,3 +191,13 @@
 	       │ Data Buffer │ 1024 bytes (2 sectors)
 	0x93ff └─────────────┘
 ```
+  - Converting LBA to CHS
+    -  LBA = a zero-based sector index (0…n–1)
+    -  SPT = “sectors per track” (typical BIOS limits: 63)
+    -  HPC = “heads per cylinder” (typical BIOS limits: 16)
+    - Compute:
+      - temp = LBA / SPT (integer division)
+      - Sector = (LBA % SPT) + 1
+      - Head = temp % HPC
+      - Cylinder = temp / HPC
+> Note: Sector numbers on CHS start at 1; head and cylinder start at 0 and for LBA starts at 0.

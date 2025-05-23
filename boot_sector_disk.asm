@@ -29,6 +29,10 @@ disk_end:
 disk_error:
 	mov bx,disk_error_msg
 	call print
+
+	mov dh,ah
+	call print_hex
+	
 	call newline
 	jmp disk_end
 
