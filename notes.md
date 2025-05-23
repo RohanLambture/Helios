@@ -124,3 +124,69 @@
 >   - Note that this is not actual physical address but logical address/linear address only which then converted by MMU(Memory Mangement Unit).This ensures isolation between processes.
 
 # Disk access using the BIOS (INT 13h)
+  - INT 0x13 is a BIOS interrupt service that provides disk I/O operations.
+  - `Input registers`
+    - `AH`: To select the function needed eg for `Read` AH =`0x02`, for `write` AH= `0x03`
+    - `AL`: Number of sectors to read
+    > Note: Cylinder Number is 10 bit long
+    - `CH`: Contains the first 8 bits of cylinder number (bits 0-7)
+    - `CL`: Contains sector number (bits 0-5) and Remaining two bits of cylinder number
+    - `DH`: Head Number
+    - `DL`: Drive Number set by bios itself (eg `0x00` if booted from `floppy` , `0x80` if booted from `first hard disk` etc )
+    - `ES:BX`:Buffer, memory address to store data
+
+  - `Output registers`
+    - `Carry flag`: 0 for successful and 1 if error
+    >
+    >```asm
+    > int 0x13 ;calls interrupt
+    > jc disk_error ; check if carry flag is 1, if yes then error
+    >```
+    - `AH`:status code (0=success ,error code if failed)
+    - `AL`: number of sectors actually read
+
+  - Example Code
+  ```asm
+  [org 0x7c00]
+  ; setup the stack
+  mov bp, 0x8000
+  mov sp, bp
+
+  mov bx, 0x9000
+  mov dh, 2
+
+  call disk_load
+
+  mov dx, [0x9000]
+  mov dx, [0x9000 + 512]
+
+
+  disk_load:
+	pusha
+	push dx
+
+	;set all the registers
+
+	int 0x13
+	jc disk_error
+
+	cmp dh,al
+	jc disk_error
+
+	pop
+	ret
+  ```
+  - `Memory Map`
+  ```text
+	0x7c00 ├─────────────┐
+           │ Bootloader  │ 512 bytes
+	0x7dff ├─────────────┤
+	       │ Free space  │
+	       │     ↑       │
+	       │   Stack     │ Stack grows downward
+	0x8000 ├─────────────┤ ← SP (Stack Pointer)
+	       │ Free space  │
+	0x9000 ├─────────────|
+	       │ Data Buffer │ 1024 bytes (2 sectors)
+	0x93ff └─────────────┘
+```
