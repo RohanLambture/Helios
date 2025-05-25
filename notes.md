@@ -83,6 +83,7 @@
   - Protected Mode
     - Logical address is `segment_selector:offset`.
     - A `segment_selector` represents an offset into a system table called the `Global Descriptor Table (GDT)`. The GDT contains a list of descriptors.Each of these contains the info about segment. Few of the fields are:
+      > Note :GDT is specific to x86-64 arch.
       - `base address` of segment
       - `limit` of segment
       - `privilege level (rings)` of descriptor
@@ -110,13 +111,15 @@
      -  Because of this all memory references will be offset by 'ds'
      - ` mov al,[es:msg]`:es is used as base for memory access and `es` is also starts at 0 therefore won't work
 
-# Logical Address vs Linear Address
+# Logical Address vs Linear Address vs Physical address vs Virtual address 
   - ` Logical address = (segment_selector:offset)`
 	- `mov ax,[msg]` for this instruction , `[msg]` is just offset with base `ds`.So `ax = ds:msg`
 	- `ax = ds:msg` is the Logical address
   - `Linear address = descriptor_base+offset`
 	- In protected mode, each segment selector(eg `ds`) has an entry in GDT , which contains the base and limit .If `offset <=limit` then cpu computes linear address
 	- In `flat memory` , OS arranges each segment selector has `base = 0` and `limit = 0xFF...(upper limit)` hence `linear address = offset `.So logical address's offset is linear address directly.
+  - `Physical address`
+	- 
 
 > # Flat-Memory model
 >   - Most C compilers assume flat-memory model
