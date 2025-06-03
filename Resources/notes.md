@@ -256,3 +256,43 @@
   - The VGA-Memory starts at `0xb8000` and has size of `4000 bytes` .Each character has `2 bytes`( one for ascii and other for color and such)
   - The formula for accessing a specific character on **80x25** grid is
     `0xb8000 + 2 * (row * 80 + col)`
+
+# Global Descriptor Table (GDT)
+> Note : Previous info at [Segmentation Section](#segmentation)
+
+![Alt text](/images/segment_descriptor.png)
+  - `Defininig the GDT`
+    - The first entry should be **null entry**
+    - In flat memory model, `base=0x0` and `limit=0xfffff`
+
+# GDT Entry Structure Table
+
+| Field | Location | Bits | Description |
+|-------|----------|------|-------------|
+| **Limit (Low)** | Bytes 0-1 | 16 bits | Lower 16 bits of segment limit |
+| **Base (Low)** | Bytes 2-3 | 16 bits | Lower 16 bits of base address |
+| **Base (Middle)** | Byte 4 | 8 bits | Middle 8 bits of base address (bits 16-23) |
+| **Access Byte** | Byte 5 | 8 bits | Access rights and type information |
+| **Limit (High) + Flags** | Byte 6 | 8 bits | Upper 4 bits of limit + 4 flag bits |
+| **Base (High)** | Byte 7 | 8 bits | Upper 8 bits of base address (bits 24-31) |
+
+## Access Byte (Byte 5) Breakdown
+
+| Bit | Name | Values | Description |
+|-----|------|--------|-------------|
+| **7** | **P** (Present) | 0 = Not present<br>1 = Present | Segment presence in memory |
+| **6-5** | **DPL** (Descriptor Privilege Level) | 00 = Ring 0 (Kernel)<br>01 = Ring 1<br>10 = Ring 2<br>11 = Ring 3 (User) | Required privilege level |
+| **4** | **S** (Descriptor Type) | 0 = System descriptor<br>1 = Code/Data segment | Descriptor category |
+| **3** | **E** (Executable) | 0 = Data segment<br>1 = Code segment | Segment type |
+| **2** | **DC** (Direction/Conforming) | **Data:** 0 = Grow up, 1 = Grow down<br>**Code:** 0 = Non-conforming, 1 = Conforming | Growth direction or conforming behavior |
+| **1** | **RW** (Read/Write) | **Data:** 0 = Read-only, 1 = Read/Write<br>**Code:** 0 = Execute-only, 1 = Execute/Read | Access permissions |
+| **0** | **A** (Accessed) | 0 = Not accessed<br>1 = Accessed | Hardware-set access flag |
+
+## Flags (Byte 6, bits 4-7) Breakdown
+
+| Bit | Name | Values | Description |
+|-----|------|--------|-------------|
+| **7** | **G** (Granularity) | 0 = Byte granularity (max 1MB)<br>1 = 4KB page granularity (max 4GB) | Limit scaling factor |
+| **6** | **D/B** (Default/Big) | **Code:** 0 = 16-bit, 1 = 32-bit<br>**Data:** 0 = 16-bit limit, 1 = 32-bit limit<br>**Stack:** 0 = SP, 1 = ESP | Default operation size |
+| **5** | **L** (Long Mode) | 0 = Not 64-bit<br>1 = 64-bit code segment | 64-bit mode indicator |
+| **4** | **AVL** (Available) | 0 or 1 (OS-defined) | Available for system software use |
