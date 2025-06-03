@@ -111,15 +111,60 @@
      -  Because of this all memory references will be offset by 'ds'
      - ` mov al,[es:msg]`:es is used as base for memory access and `es` is also starts at 0 therefore won't work
 
-# Logical Address vs Linear Address vs Physical address vs Virtual address 
-  - ` Logical address = (segment_selector:offset)`
-	- `mov ax,[msg]` for this instruction , `[msg]` is just offset with base `ds`.So `ax = ds:msg`
-	- `ax = ds:msg` is the Logical address
-  - `Linear address = descriptor_base+offset`
-	- In protected mode, each segment selector(eg `ds`) has an entry in GDT , which contains the base and limit .If `offset <=limit` then cpu computes linear address
+# Logical Address vs Linear Address vs Physical address vs Virtual address
+  - `Virtual address`
+	- The address seen by programm
+	- **Virtual address** is the `offset within segment`
+	- In **Segmented Mode** , `Linear address = Segment Base + virtual address (offset)`
+	- In **Flat Memory Model**, `Linear address = virtual address = offset`
+  - ` Logical address`
+	- The address as seen by the CPU
+	- `segment_selector:offset` in protected mode and `segment:offset` in real mode
+	- eg. `mov ax,[ds:msg]` - here is `ds:msg` is the logical address
+  - `Linear address`
+	- The adderss after segmentation but before paging
+	- **Real Mode** :`Physical address = (segment << 4)+ offset`
+	- **protected mode** :`Linear address = descriptor_base+offset`
+	-  each segment selector(eg `ds`) has an entry in GDT , which contains the base and limit .If `offset <=limit` then cpu computes linear address
+
 	- In `flat memory` , OS arranges each segment selector has `base = 0` and `limit = 0xFF...(upper limit)` hence `linear address = offset `.So logical address's offset is linear address directly.
   - `Physical address`
-	- 
+	- The actual address on the memory , final result after all translation (**segmentation + paging**)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  Program Code:  mov eax, [0x08048000]                                                                                                                        │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                                                    │
+                                                                                    ▼
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                    MEMORY MODEL COMPARISON                                                                                   │
+│                                                                                                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────────┐     ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                    FLAT MEMORY MODEL                                    │     │                   SEGMENTED MEMORY MODEL                                │ │
+│  │                   (Modern x86-64/x86-32)                                │     │                    (Legacy x86-16)                                      │ │
+│  │                                                                         │     │                                                                         │ │
+│  │              NO LOGICAL ADDRESS                                         │     │               HAS LOGICAL ADDRESS                                       │ │
+│  └─────────────────────────────────────────────────────────────────────────┘     └─────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                                                                                              │
+│  ┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────┐ │
+│  │   VIRTUAL ADDRESS   │ →   │   LINEAR ADDRESS    │ →   │ PHYSICAL ADDRESS│     │   LOGICAL ADDRESS   │ →   │   LINEAR ADDRESS    │ →   │ PHYSICAL ADDRESS│ │
+│  │  (What program uses)│     │ (After segmentation)│     │ (After paging)  │     │ (segment:offset)    │     │ (After segmentation)│     │ (After paging)  │ │
+│  │                     │     │                     │     │                 │     │                     │     │                     │     │                 │ │
+│  │    0x08048000       │     │    0x08048000       │     │   0x12345678    │     │   DS:0x8000         │     │    0x08048000       │     │   0x12345678    │ │
+│  │                     │     │ (same as virtual)   │     │ (actual RAM)    │     │ (16-bit segment:    │     │ DS*16 + 0x8000      │     │ (actual RAM)    │ │
+│  │ Process Virtual     │     │ Identity mapping    │     │                 │     │  16-bit offset)     │     │ = 0x08048000        │     │ MMU translated  │ │
+│  │ Memory Space        │     │ (base = 0x00000000) │     │                 │     │                     │     │                     │     │                 │ │
+│  └─────────────────────┘     └─────────────────────┘     └─────────────────┘     └─────────────────────┘     └─────────────────────┘     └─────────────────┘ │
+│                                                                                                                                                              │
+│  Key Differences:                                                                                                                                            │
+│  • Flat Model: NO logical addresses - programs work directly with virtual addresses                                                                          │
+│  • Segmented Model: Programs use logical addresses (segment:offset pairs)                                                                                    │
+│  • Flat Model: Virtual Address = Linear Address (segmentation is transparent)                                                                                │
+│  • Segmented Model: Logical Address → Linear Address → Physical Address                                                                                      │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
 
 > # Flat-Memory model
 >   - Most C compilers assume flat-memory model
