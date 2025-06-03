@@ -226,7 +226,7 @@
 	ret
   ```
   - `Memory Map`
-  ```text
+```text
 	0x7c00 ├─────────────┐
            │ Bootloader  │ 512 bytes
 	0x7dff ├─────────────┤
@@ -249,3 +249,10 @@
       - Head = temp % HPC
       - Cylinder = temp / HPC
 > Note: Sector numbers on CHS start at 1; head and cylinder start at 0 and for LBA starts at 0.
+
+# VGA (Video Graphics Array)
+  - In **32-bit Protected Mode** , We lost BIOS interrupts and we'll need to code the GDT
+  - To print something we use `VGA-Memory`,it has **text mode** instead of pixels manipulation
+  - The VGA-Memory starts at `0xb8000` and has size of `4000 bytes` .Each character has `2 bytes`( one for ascii and other for color and such)
+  - The formula for accessing a specific character on **80x25** grid is
+    `0xb8000 + 2 * (row * 80 + col)`
