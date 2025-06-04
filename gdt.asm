@@ -1,5 +1,3 @@
-;GDT
-
 gdt_start:
 
 ;the first entry - null descriptor
@@ -32,4 +30,4 @@ gdt_descriptor:
 	dd gdt_start ; Start address of our GDT
 
 CODE_SEG equ gdt_code - gdt_start
-DATA_SEG equ gdt_data - gdt_star
+DATA_SEG equ gdt_data - gdt_start
