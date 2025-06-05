@@ -186,7 +186,7 @@
   - `Output registers`
     - `Carry flag`: 0 for successful and 1 if error
     >
-    >```asm
+    >```nasm
     > int 0x13 ;calls interrupt
     > jc disk_error ; check if carry flag is 1, if yes then error
     >```
@@ -194,7 +194,7 @@
     - `AL`: number of sectors actually read
 
   - Example Code
-  ```asm
+  ```nasm
   [org 0x7c00]
   ; setup the stack
   mov bp, 0x8000
@@ -296,3 +296,43 @@
 | **6** | **D/B** (Default/Big) | **Code:** 0 = 16-bit, 1 = 32-bit<br>**Data:** 0 = 16-bit limit, 1 = 32-bit limit<br>**Stack:** 0 = SP, 1 = ESP | Default operation size |
 | **5** | **L** (Long Mode) | 0 = Not 64-bit<br>1 = 64-bit code segment | 64-bit mode indicator |
 | **4** | **AVL** (Available) | 0 or 1 (OS-defined) | Available for system software use |
+
+
+# Switch to 32-bit Protected Mode
+  - To jump/switch to Protected Mode
+    - **Disable interrupts**: ` cli ` will disable the interrupts
+    - **Load our GDT**: `    lgdt [gdt_descriptor] `
+    - Set a bit on the CPU control register cr0
+      ```nasm
+      mov eax, cr0
+      or eax, 0x1 ; 3. set 32-bit mode bit in cr0
+      mov cr0, eax
+      ```
+    - Flush the CPU pipeline by far jump
+      - `jmp CODE_SEG:init_pm`: this performs far jump to load CS register with proper PM32 descriptor
+      > Note: If we perform near jump `jmp init_pm` CS regsiter will point to old value that is `0x7c00`
+    - Update all the segment registers
+      ```nasm
+      [bits 32]
+      init_pm:
+          ; update the segment registers
+          mov ax, DATA_SEG
+          mov ds, ax
+          mov ss, ax
+          mov es, ax
+          mov fs, ax
+          mov gs, ax
+      ```
+      - `[bits 32]` tells the assembler to use `32-bit mode` from now on
+      - Here, We are pointing every segment register to same descriptor because we are using flat memory model.
+      - We are using the **DATA_SEG to update the registers** while we used the **CODE_SEG for updating the CS register** because of the `permissions differences`.
+
+    >Note: In flat memory model, all segment registers (CS, DS, SS, ES, FS, GS) point to the same 4GB address space but have different access permissions. CS has executable+readable permissions for instruction fetching, while DS/SS/ES/FS/GS have readable+writable (non-executable) permissions for data access.
+
+    - Update the stack
+      - After switching to protected mode, **ESP and EBP still contain old values** from real mode
+      ```nasm
+      mov ebp, 0x90000
+      mov esp, ebp
+      ```
+    - Call to a well-known label which contains the first useful code in 32 bits.Here `call BEGIN_PM`.
