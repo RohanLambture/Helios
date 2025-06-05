@@ -308,6 +308,7 @@
       or eax, 0x1 ; 3. set 32-bit mode bit in cr0
       mov cr0, eax
       ```
+      > Note: x86 CPUs only support mov instructions for control registers (CR0, CR3, CR4). Direct bit manipulation like or cr0, 0x1 doesn't exist.
     - Flush the CPU pipeline by far jump
       - `jmp CODE_SEG:init_pm`: this performs far jump to load CS register with proper PM32 descriptor
       > Note: If we perform near jump `jmp init_pm` CS regsiter will point to old value that is `0x7c00`
