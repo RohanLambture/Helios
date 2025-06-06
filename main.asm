@@ -6,7 +6,7 @@ mov bp, 0x9000
 mov sp, bp
 
 mov bx, MSG_REAL_MODE
-call print_rm
+;call print_rm
 call print_rm_newline
 
 call load_kernel
@@ -19,10 +19,14 @@ jmp $ ; Never executed
 %include "gdt.asm"
 %include "switch.asm"
 
+
+debug_help:
+    jmp $
+
 [bits 16]
 load_kernel:
     mov bx, MSG_LOAD_KERNEL
-    call print_rm
+    ;call print_rm
     call print_rm_newline
 
     mov bx, KERNEL_OFFSET ; Read from disk and store in 0x1000
@@ -36,7 +40,7 @@ BEGIN_PM:
     mov ebx, MSG_PROT_MODE
     call print_pm
     call KERNEL_OFFSET ; Give control to the kernel
-    ; jmp $ ; Stay here when the kernel returns control to us (if ever)
+    jmp $ ; Stay here when the kernel returns control to us (if ever)
 
 
 BOOT_DRIVE db 0
