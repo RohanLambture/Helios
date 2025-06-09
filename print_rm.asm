@@ -1,3 +1,5 @@
+[bits 16]
+
 print_rm:
 	pusha
 
@@ -59,7 +61,7 @@ print_rm_hex_help:
 
 print_rm_hex_end:
 	mov bx,HEX_MSG
-	call print_rm
+	;call print_rm
 
 	popa
 	ret
