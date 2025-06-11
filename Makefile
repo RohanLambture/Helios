@@ -37,9 +37,9 @@ $(BUILD_DIR)/boot.bin: $(BOOT_DIR)/main.asm $(BOOT_DIR)/*.asm | $(BUILD_DIR)
 	@echo "✓ Bootloader compiled"
 
 # Link the kernel
-$(BUILD_DIR)/kernel.bin: $(BUILD_DIR)/kernel_entry.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/ports.o | $(BUILD_DIR)
+$(BUILD_DIR)/kernel.bin: $(BUILD_DIR)/kernel_entry.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/ports.o $(BUILD_DIR)/screen.o | $(BUILD_DIR)
 	@echo "Linking kernel..."
-	$(LD) -o $(BUILD_DIR)/kernel.bin -Ttext $(KERNEL_OFFSET) $(BUILD_DIR)/kernel_entry.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/ports.o $(LDFLAGS)
+	$(LD) -o $(BUILD_DIR)/kernel.bin -Ttext $(KERNEL_OFFSET) $(BUILD_DIR)/kernel_entry.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/ports.o $(BUILD_DIR)/screen.o $(LDFLAGS)
 	@echo "✓ Kernel linked"
 
 # Compile kernel entry point
@@ -52,10 +52,15 @@ $(BUILD_DIR)/kernel.o: $(KERNEL_DIR)/kernel.c | $(BUILD_DIR)
 	@echo "Compiling kernel..."
 	$(CC) $(CFLAGS) -I$(DRIVERS_DIR) -c $(KERNEL_DIR)/kernel.c -o $(BUILD_DIR)/kernel.o
 
-# Compile driver C code
+# Compile driver C code - ports
 $(BUILD_DIR)/ports.o: $(DRIVERS_DIR)/ports.c | $(BUILD_DIR)
 	@echo "Compiling driver: ports.c..."
 	$(CC) $(CFLAGS) -c $(DRIVERS_DIR)/ports.c -o $(BUILD_DIR)/ports.o
+
+# Compile driver C code - screen
+$(BUILD_DIR)/screen.o: $(DRIVERS_DIR)/screen.c | $(BUILD_DIR)
+	@echo "Compiling driver: screen.c..."
+	$(CC) $(CFLAGS) -c $(DRIVERS_DIR)/screen.c -o $(BUILD_DIR)/screen.o
 
 # Create build directory
 $(BUILD_DIR):

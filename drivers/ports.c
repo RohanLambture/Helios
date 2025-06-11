@@ -1,3 +1,4 @@
+#include "ports.h"
 // Read a byte from specified port
 unsigned char read_byte_from_port(unsigned short port){
 	unsigned char result;
