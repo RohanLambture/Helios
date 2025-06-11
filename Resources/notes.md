@@ -372,3 +372,29 @@
     ```bash
     ndisasm -b 32 code.bin
     ```
+
+# Cursor Position using VGA card ports
+  - `0x3d4` **VGA control register** - sets which VGA register to access
+  - `0x3d5` **VGA data register** - reads/writes the selected VGA register
+  ```text 
+			  VGA Controller Internal Layout:
+			┌─────────────────────────────────────┐
+			│  VGA Chip Internal Registers        │
+			│  ┌─────┬─────┬─────┬─────┬─────┐    │
+			│  │ #0  │ #1  │ #2  │ ... │ #24 │    │
+			│  └─────┴─────┴─────┴─────┴─────┘    │
+			│         ▲                           │
+			│         │                           │
+			│  ┌─────────────┐   ┌─────────────┐  │
+			│  │Index Reg(A) │   │Data Reg (B) │  │ 
+			│  └─────────────┘   └─────────────┘  │
+			└─────────────────────────────────────┘
+			        ▲                       ▲
+			        │                       │
+			   Port 0x3d4              Port 0x3d5
+  ```
+  - Step-by-Step Process
+    - Select the VGA register to access by writing the register number to port 0x3d4. `write_byte_to_port(0x3d4,14)` for the high byte of the cursor position and `write_byte_to_port(0x3d4,15)` for the low byte.
+    - Read the data from port 0x3d5. `read_byte_from_port(0x3d5)`
+    - The offset from base vga address is calculated as `((high_byte << 8) | low_byte) * 2 `
+> Note : `in` and `out` instructions are used to communicate via ports
