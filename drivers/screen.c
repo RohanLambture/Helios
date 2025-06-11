@@ -22,19 +22,6 @@ void printk_at(char *message,int col,int row , int color){
 		col = get_offset_col(offset);
 	}
 	set_cursor_offset(get_offset(col, row));
-	// // int index = 0;
-	// // int offset = 2 * (row * SCREEN_WIDTH + col);
-
-	// if(offset >= SCREEN_HEIGHT * SCREEN_WIDTH *2){
-	// 	// out of bounds
-	// 	return;
-	// }
-	// char *vga = (char*)VGA_MEMORY_ADDRESS;
-	// while(message[index] != '\0'){
-	// 	vga[offset+index*2]= message[index];
-	// 	vga[offset+index*2+1]= color;
-	// 	index++;
-	// }
 }
 
 void printk(char *message){
@@ -59,9 +46,9 @@ int printk_char(char c,int col,int row,int color){
 	if(!color){
 		color = WHITE_ON_BLACK;
 	}
-	// if(offset < 0 ){
-	// 	int position = get_cursor_offset();
-	// }
+	if(offset < 0 ){
+		int position = get_cursor_offset();
+	}
 	// TODO:do something for offset >= SCREEN_HEIGHT * SCREEN_WIDTH * 2
 	if(c == '\n'){
 		row++;
