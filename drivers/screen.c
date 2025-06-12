@@ -1,5 +1,6 @@
 #include "screen.h"
 #include "ports.h"
+#include "../kernel/util.h"
 
 /* Private functions declarations */
 int printk_char(char c,int col,int row,int color);
@@ -22,7 +23,7 @@ void printk_at(char *message,int col,int row , int color){
 		row = get_offset_row(offset);
 		col = get_offset_col(offset);
 	}
-	set_cursor_offset(get_offset(col, row));
+	// set_cursor_offset(get_offset(col, row));
 }
 
 void printk(char *message){
@@ -53,9 +54,14 @@ int printk_char(char c,int col,int row,int color){
 		color = WHITE_ON_BLACK;
 	}
 	if(offset < 0 ){
-		int position = get_cursor_offset();
+		offset = get_cursor_offset();
+	}else if(offset >= 2 * SCREEN_HEIGHT * SCREEN_WIDTH){
+		// for(int i=1;i<SCREEN_HEIGHT;i++){
+		// 	memcpy((char*)VGA_MEMORY_ADDRESS+get_offset(0,i-1),(char*)VGA_MEMORY_ADDRESS+get_offset(0,i),SCREEN_WIDTH * 2);
+		// }
+		// Blank last line
+		// clear_screen(0, SCREEN_HEIGHT-1);
 	}
-	// TODO:do something for offset >= SCREEN_HEIGHT * SCREEN_WIDTH * 2
 	if(c == '\n'){
 		row++;
 		col = 0;
@@ -66,6 +72,8 @@ int printk_char(char c,int col,int row,int color){
 		vga[offset+1] = color;
 		offset+=2;
 	}
+	
+	set_cursor_offset(offset);
 	return offset;
 }
 
