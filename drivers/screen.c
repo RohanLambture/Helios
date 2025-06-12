@@ -11,6 +11,7 @@ int get_offset_col(int offset);
 
 /* Public functions */
 void printk_at(char *message,int col,int row , int color){
+	if(!message)return;
 	if(!color){
 		color = WHITE_ON_BLACK;
 	}
@@ -42,6 +43,11 @@ void clear_screen(int col,int row){
 /* Private functions implementation */
 
 int printk_char(char c,int col,int row,int color){
+	if(col >= SCREEN_WIDTH || row >= SCREEN_HEIGHT){
+		char *vga = (char*)VGA_MEMORY_ADDRESS;
+		vga[2*SCREEN_HEIGHT*SCREEN_WIDTH-2]= 'X';
+		vga[2*SCREEN_HEIGHT*SCREEN_WIDTH-1]= RED_ON_WHITE;
+	}
 	int offset = get_offset(col,row);
 	if(!color){
 		color = WHITE_ON_BLACK;
