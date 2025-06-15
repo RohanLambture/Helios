@@ -1,45 +1,39 @@
-; read dh sectors from dl drive
-
+; load 'dh' sectors from drive 'dl' into ES:BX
 disk_load:
-	pusha
-	push dx ; push the dx register onto the stack as we are going to changes it contents
+    pusha
+    push dx
 
-	mov ah,0x02 ; select read from disk function
-	mov al,dh
+    mov ah, 0x02
+    mov al, dh
+    mov cl, 0x02
 
-	mov dh,0x00 ; hardcoded to head number to 0
-	; dl is already set by bios
+    mov ch, 0x00
+    mov dh, 0x00
 
-	mov ch ,0x00 ; cylinder number =0
-	mov cl,0x02  ; starting sector form where to start reading
+    int 0x13
+    jc disk_error
 
-	;[es:bx] is where want to store the data
-	int 0x13
-	jc disk_error; if carry flag is set , then error
+    pop dx
+    cmp al, dh
+    jne sectors_error
+    popa
+    ret
 
-	pop dx
-	cmp al,dh ;bios set the number for sector read in the al
-	jne sector_error
-	jmp disk_end
-
-disk_end:
-	popa
-	ret
 
 disk_error:
-	mov bx,disk_error_msg
-	call print_rm
-	call print_rm_newline
-	jmp disk_end
+    mov bx, DISK_ERROR
+    call print
+    call print_nl
+    mov dh, ah
+    call print_hex
+    jmp disk_loop
 
-sector_error:
-	mov bx, sector_error_msg
-	call print_rm
-	call print_rm_newline
-	jmp disk_end
+sectors_error:
+    mov bx, SECTORS_ERROR
+    call print
 
+disk_loop:
+    jmp $
 
-disk_error_msg:
-	db "Error while reading",0
-sector_error_msg:
-	db "Incorrect no of sectors read" , 0
+DISK_ERROR: db "Disk read error", 0
+SECTORS_ERROR: db "Incorrect number of sectors read", 0

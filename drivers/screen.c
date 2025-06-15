@@ -1,125 +1,104 @@
 #include "screen.h"
 #include "ports.h"
-#include "../kernel/util.h"
 
-/* Private functions declarations */
-int printk_char(char c,int col,int row,int color);
+/* Declaration of private functions */
 int get_cursor_offset();
 void set_cursor_offset(int offset);
+int print_char(char c, int col, int row, char attr);
 int get_offset(int col, int row);
 int get_offset_row(int offset);
 int get_offset_col(int offset);
-void error();
 
-/* Public functions */
-void printk_at(char *message,int col,int row , int color){
-	if(!message)return;
-	if(!color){
-		color = WHITE_ON_BLACK;
-	}
-	int index = 0;
-	int offset = get_offset(col,row);
-	while(message[index]!='\0'){
-		char *vga = (char*)VGA_MEMORY_ADDRESS;
-		vga[offset] = message[index++];
-		vga[offset+1] = color;
-		offset+=2;
-	}
-	// while(message[index] !='\0'){
-	// 	offset = printk_char(message[index++],col,row,color);
-	// 	row = get_offset_row(offset);
-	// 	col = get_offset_col(offset);
-	// }
+/**********************************************************
+ * Public Kernel API functions                            *
+ **********************************************************/
+
+void kprint_at(char *message, int col, int row) {
+    /* Set cursor if col/row are negative */
+    int offset;
+    if (col >= 0 && row >= 0)
+        offset = get_offset(col, row);
+    else {
+        offset = get_cursor_offset();
+        row = get_offset_row(offset);
+        col = get_offset_col(offset);
+    }
+
+    /* Loop through message and print it */
+    int i = 0;
+    while (message[i] != 0) {
+        offset = print_char(message[i++], col, row, WHITE_ON_BLACK);
+        /* Compute row/col for next iteration */
+        row = get_offset_row(offset);
+        col = get_offset_col(offset);
+    }
 }
 
-void printk(char *message){
-	printk_at(message,0,0,WHITE_ON_BLACK);
-}
-
-/* Clears the screen from current position */
-void clear_screen(int col,int row){
-	int offset = get_offset(col,row);
-	char *vga = (char*)VGA_MEMORY_ADDRESS;
-	while(offset < SCREEN_HEIGHT * SCREEN_WIDTH * 2){
-		vga[offset]= ' ';
-		vga[offset+1]= WHITE_ON_BLACK;
-		offset+=2;
-	}
-	set_cursor_offset(get_offset(col, row));
-}
-
-/* Private functions implementation */
-
-int printk_char(char c,int col,int row,int color){
-	// if(col >= SCREEN_WIDTH || row >= SCREEN_HEIGHT){
-	// 	// error();
-	// }
-	int offset = get_offset(col,row);
-	// if(!color){
-	// 	color = WHITE_ON_BLACK;
-	// }
-	// if(offset < 0 ){
-	// 	offset = get_cursor_offset();
-	// }
-	// else if(offset >= 2 * SCREEN_HEIGHT * SCREEN_WIDTH){
-	// 	// error();
-	// 	// for(int i=1;i<SCREEN_HEIGHT;i++){
-	// 	// 	memcpy((char*)VGA_MEMORY_ADDRESS+get_offset(0,i-1),(char*)VGA_MEMORY_ADDRESS+get_offset(0,i),SCREEN_WIDTH * 2);
-	// 	// }
-	// 	// Blank last line
-	// 	// clear_screen(0, SCREEN_HEIGHT-1);
-	// }
-	if(c == '\n'){
-		error();
-		row++;
-		col = 0;
-		offset = get_offset(col,row);
-	}else{
-		char *vga = (char*)VGA_MEMORY_ADDRESS;
-		vga[offset] = c;
-		vga[offset+1] = color;
-		offset+=2;
-	}
-	
-	set_cursor_offset(offset);
-	return offset;
+void kprint(char *message) {
+    kprint_at(message, -1, -1);
 }
 
 
-int get_cursor_offset(){
-	write_byte_to_port(VGA_CTRL_PORT, 14);
-	int position = read_byte_from_port(VGA_DATA_PORT);
-	position = position << 8;
-	write_byte_to_port(VGA_CTRL_PORT, 15);
-	position +=read_byte_from_port(VGA_DATA_PORT);
-	return position * 2;
+/**********************************************************
+ * Private kernel functions                               *
+ **********************************************************/
+
+int print_char(char c, int col, int row, char attr) {
+    unsigned char *vidmem = (unsigned char*) VIDEO_ADDRESS;
+    if (!attr) attr = WHITE_ON_BLACK;
+
+    /* Error control: print a red 'E' if the coords aren't right */
+    if (col >= MAX_COLS || row >= MAX_ROWS) {
+        vidmem[2*(MAX_COLS)*(MAX_ROWS)-2] = 'E';
+        vidmem[2*(MAX_COLS)*(MAX_ROWS)-1] = RED_ON_WHITE;
+        return get_offset(col, row);
+    }
+
+    int offset;
+    if (col >= 0 && row >= 0) offset = get_offset(col, row);
+    else offset = get_cursor_offset();
+
+    if (c == '\n') {
+        row = get_offset_row(offset);
+        offset = get_offset(0, row+1);
+    } else {
+        vidmem[offset] = c;
+        vidmem[offset+1] = attr;
+        offset += 2;
+    }
+    set_cursor_offset(offset);
+    return offset;
 }
 
-void set_cursor_offset(int offset){
-	offset /=2;
-	
-	write_byte_to_port(VGA_CTRL_PORT, 14);
-	write_byte_to_port(VGA_DATA_PORT, offset >> 8);
-	write_byte_to_port(VGA_CTRL_PORT, 15);
-	write_byte_to_port(VGA_DATA_PORT,offset & 0xff);
+int get_cursor_offset() {
+    port_byte_out(REG_SCREEN_CTRL, 14);
+    int offset = port_byte_in(REG_SCREEN_DATA) << 8; /* High byte: << 8 */
+    port_byte_out(REG_SCREEN_CTRL, 15);
+    offset += port_byte_in(REG_SCREEN_DATA);
+    return offset * 2; /* Position * size of character cell */
 }
 
-int get_offset(int col,int row){
-	return 2 * (row * SCREEN_WIDTH + col);
+void set_cursor_offset(int offset) {
+    offset /= 2;
+    port_byte_out(REG_SCREEN_CTRL, 14);
+    port_byte_out(REG_SCREEN_DATA, (unsigned char)(offset >> 8));
+    port_byte_out(REG_SCREEN_CTRL, 15);
+    port_byte_out(REG_SCREEN_DATA, (unsigned char)(offset & 0xff));
 }
 
-int get_offset_row(int offset){
-	return offset / ( SCREEN_WIDTH * 2 );
+void clear_screen() {
+    int screen_size = MAX_COLS * MAX_ROWS;
+    int i;
+    char *screen = (char*) VIDEO_ADDRESS;
+
+    for (i = 0; i < screen_size; i++) {
+        screen[i*2] = ' ';
+        screen[i*2+1] = WHITE_ON_BLACK;
+    }
+    set_cursor_offset(get_offset(0, 0));
 }
 
-int get_offset_col(int offset){
-	return (offset % (SCREEN_WIDTH * 2))/2;
-}
-int error_pos = 2 * SCREEN_WIDTH * SCREEN_HEIGHT ;
-void error(){
-	char *vga = (char*)VGA_MEMORY_ADDRESS;
-	vga[error_pos-2]= 'X';
-	vga[error_pos-1]= RED_ON_WHITE;
-	// error_pos -=2;
-}
 
+int get_offset(int col, int row) { return 2 * (row * MAX_COLS + col); }
+int get_offset_row(int offset) { return offset / (2 * MAX_COLS); }
+int get_offset_col(int offset) { return (offset - (get_offset_row(offset)*2*MAX_COLS))/2; }

@@ -1,9 +1,10 @@
 #include "../drivers/screen.h"
-#include "util.h"
 
 int main() {
-	printk("hello world1234567890NextlineRohan Lambturedfkadfkdkfdakldjfkajfkdjfkdjfkdfkjadlfoerka;dficnal;nda");
-	// printk_at("hello",80,30, 0x0f);
-	// clear_screen(0,0);
-	return 0;
+    clear_screen();
+    kprint_at("X", 1, 6);
+    kprint_at("This text spans multiple lines", 75, 10);
+    kprint_at("There is a line\nbreak", 0, 20);
+    kprint("There is a line\nbreak");
+    kprint_at("What happens when we run out of space?", 45, 24);
 }
