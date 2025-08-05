@@ -5,11 +5,8 @@ OBJ = ${C_SOURCES:.c=.o}
 
 # Clang configuration
 CC = clang
-# Clang can use either lld (LLVM's linker) or your existing i386-elf-ld
 LINKER = ld.lld
-# Alternative: LINKER = i386-elf-ld
 GDB = gdb
-# Clang-specific flags for bare metal i386 development
 CFLAGS = -g --target=i386-elf -ffreestanding -fno-builtin -nostdlib -nostdinc
 
 # First rule is run by default
