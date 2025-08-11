@@ -4,7 +4,7 @@
 void set_idt_entry(int n, uint32_t handler){
 	idt[n].low_offset = lower_16(handler);
 	idt[n].kernel_segment_selector = IDT_SEGMENT_SELECTOR;
-	idt[n].reserverd_zero = 0;
+	idt[n].reserved_zero = 0;
 	idt[n].flags = 0x08E; // x08E ( interrupt gate) , 0x08F (trap gate) , 0x085 (Task gate)
 	idt[n].high_offset = higher_16(handler);
 }

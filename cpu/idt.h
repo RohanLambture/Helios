@@ -8,7 +8,7 @@
 struct idt_entry{
 	uint16_t low_offset;
 	uint16_t kernel_segment_selector;
-	uint8_t reserverd_zero = 0;
+	uint8_t reserved_zero;
 	uint8_t flags; 
 	uint16_t high_offset;
 }__attribute__((packed));
