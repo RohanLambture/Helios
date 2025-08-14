@@ -1,52 +1,76 @@
+### Helios — A tiny 32‑bit x86 OS
 
-A toy operating system built for fun and learning.
+This is a minimal, educational operating system built from scratch for the x86 (i386) architecture. It features a handcrafted bootloader, a 32‑bit protected‑mode kernel written in C and assembly, basic drivers, and a simple interrupt subsystem. 
 
-## About
+> This project is not intended for production use.
 
-This project is a simple OS built from scratch.
+---
 
-## Features
+### Features
 
-*   **Bootloader:** Loads the kernel from disk.
-*   **32-bit Protected Mode:** Switches the CPU from real mode to 32-bit protected mode.
-*   **Screen Driver:** Basic driver for printing to the screen.
-*   **Interrupt Handling:** Basic interrupt handling is set up.
-*   **Memory Management:** The project uses a flat memory model.
+- **Bootloader**: Loads the kernel from disk and transitions control to 32‑bit mode
+- **Protected Mode**: GDT setup and mode switch, flat memory model
+- **Interrupts**: IDT setup, basic ISR/IRQ plumbing
+- **Screen Output**: Text‑mode screen driver for logging/printing
+- **Ports I/O**: Minimal port helpers for device interaction
+- **Build System**: `Makefile` with `nasm`, `clang` and `ld.lld`; QEMU for emulation
 
+---
 
-## Building and Running
+### Prerequisites
 
-To build the OS, you'll need `nasm`, `clang` , `ld.lld` and `qemu`.
+You will need an x86 cross‑compiling toolchain and QEMU. The build uses `clang` with `--target=i386-elf` and `ld.lld`.
+
+- **Required tools**: `nasm`, `clang`, `ld.lld`, `qemu-system-i386`, `gdb`
+
+---
+
+### Build and run
+
+- **Build** the kernel and bootable image:
 
 ```bash
 make
 ```
 
-To run the OS in QEMU:
+- **Run** in QEMU:
 
 ```bash
 make run
 ```
 
-## Debugging
+This launches `qemu-system-i386` with the generated `os-image.bin` as a floppy image.
 
-To debug the OS with GDB:
+- **Debug** with GDB:
 
 ```bash
 make debug
 ```
 
-This will start a GDB server in QEMU. You can then connect to it with GDB.
+This starts QEMU with a GDB server. In another terminal you can attach with:
 
-## Cleaning
+```bash
+gdb -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
+```
 
-To clean up the build files:
+- **Clean** build artifacts:
 
 ```bash
 make clean
 ```
 
-## Future Work
+---
 
-*   Implement a simple filesystem.
-*   Create a basic shell.
+### Roadmap
+
+- Implement a simple filesystem and disk driver
+- Create a basic shell and command interface
+- Paging and virtual memory
+- Timer and keyboard interrupt handling
+- Simple memory allocator
+
+---
+
+### References
+- OSDev Wiki — [OSDev.org](https://wiki.osdev.org)
+---
