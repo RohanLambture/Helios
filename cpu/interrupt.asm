@@ -1,5 +1,5 @@
 [extern isr_handler]
-[extren irq_handler]
+[extern irq_handler]
 
 ; Common ISR code for each interrupt
 isr_common_stub:

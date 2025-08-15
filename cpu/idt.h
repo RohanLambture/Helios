@@ -20,8 +20,8 @@ struct idt_register{
 
 
 #define IDT_ENTRIES 256
-struct idt_entry idt[IDT_ENTRIES];
-struct idt_register idt_reg;
+extern struct idt_entry idt[IDT_ENTRIES];
+extern struct idt_register idt_reg;
 
 void set_idt_entry(int n,uint32_t handler);
 void set_idt();

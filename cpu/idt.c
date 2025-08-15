@@ -1,6 +1,9 @@
 #include "idt.h"
 #include "../kernel/util.h"
 
+struct idt_entry idt[IDT_ENTRIES];
+struct idt_register idt_reg;
+
 void set_idt_entry(int n, uint32_t handler){
 	idt[n].low_offset = lower_16(handler);
 	idt[n].kernel_segment_selector = IDT_SEGMENT_SELECTOR;

@@ -1,5 +1,5 @@
 C_SOURCES = $(wildcard kernel/*.c drivers/*.c cpu/*.c)
-ASM_SOURCES = $(wildcard boot/*.asm cpu/*.asm)
+ASM_SOURCES = $(wildcard cpu/*.asm)
 HEADERS = $(wildcard kernel/*.h drivers/*.h cpu/*.h)
 OBJ = ${C_SOURCES:.c=.o} ${ASM_SOURCES:.asm=.o}
 
@@ -35,12 +35,14 @@ debug: os-image.bin kernel.elf
 %.o: %.c ${HEADERS}
 	${CC} ${CFLAGS} -c $< -o $@
 
-%.o: %.asm
+# Only for CPU assembly files (not boot sector)
+cpu/%.o: cpu/%.asm
 	nasm $< -f elf -o $@
 
+# Boot sector needs binary format
 boot/bootsect.bin: boot/bootsect.asm
 	nasm $< -f bin -o $@
 
 clean:
 	rm -rf *.bin *.dis *.o os-image.bin *.elf
-	rm -rf kernel/*.o boot/*.bin drivers/*.o boot/*.o
+	rm -rf kernel/*.o boot/*.bin drivers/*.o boot/*.o cpu/*.o
