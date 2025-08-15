@@ -8,7 +8,7 @@ int main() {
 	
 	isr_install();
 	asm volatile("sti");
-	init_timer(50);
+	init_timer(5);
 
 	/* Fill up the screen */
 	// int i = 0;
