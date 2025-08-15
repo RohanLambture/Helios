@@ -10,5 +10,7 @@ typedef char int8_t;
 
 #define lower_16(address) (uint16_t) ((address) & 0xFFFF)
 #define higher_16(address) (uint16_t) (((address)>>16) & 0xFFFF)
+#define lower_8(address) (uint8_t)((address) & 0xFF)
+#define higher_8(address) (uint8_t)(((address) >> 8 ) & 0xFF)
 
 #endif

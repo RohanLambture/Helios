@@ -1,7 +1,7 @@
-C_SOURCES = $(wildcard kernel/*.c drivers/*.c)
-HEADERS = $(wildcard kernel/*.h drivers/*.h)
-# Nice syntax for file extension replacement
-OBJ = ${C_SOURCES:.c=.o}
+C_SOURCES = $(wildcard kernel/*.c drivers/*.c cpu/*.c)
+ASM_SOURCES = $(wildcard boot/*.asm cpu/*.asm)
+HEADERS = $(wildcard kernel/*.h drivers/*.h cpu/*.h)
+OBJ = ${C_SOURCES:.c=.o} ${ASM_SOURCES:.asm=.o}
 
 # Clang configuration
 CC = clang
@@ -15,11 +15,11 @@ os-image.bin: boot/bootsect.bin kernel.bin
 
 # '--oformat binary' del't need
 # to 'strip' them manually on this case
-kernel.bin: boot/kernel_entry.o ${OBJ}
+kernel.bin: ${OBJ}
 	${LINKER} -m elf_i386 -o $@ -Ttext 0x1000 $^ --oformat binary
 
 # Used for debugging purposes
-kernel.elf: boot/kernel_entry.o ${OBJ}
+kernel.elf: ${OBJ}
 	${LINKER} -m elf_i386 -o $@ -Ttext 0x1000 $^ 
 
 run: os-image.bin
@@ -38,7 +38,7 @@ debug: os-image.bin kernel.elf
 %.o: %.asm
 	nasm $< -f elf -o $@
 
-%.bin: %.asm
+boot/bootsect.bin: boot/bootsect.asm
 	nasm $< -f bin -o $@
 
 clean:
