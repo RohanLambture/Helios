@@ -2,6 +2,9 @@
 #include "idt.h"
 #include "../drivers/screen.h"
 #include "../kernel/util.h"
+#include "../drivers/ports.h"
+
+isr_t interrupt_handlers[256];
 
 void isr_install() {
 	set_idt_entry(0, (uint32_t)isr0);
@@ -36,6 +39,36 @@ void isr_install() {
 	set_idt_entry(29, (uint32_t)isr29);
 	set_idt_entry(30, (uint32_t)isr30);
 	set_idt_entry(31, (uint32_t)isr31);
+	
+	// Mapping PIC 
+	port_byte_out(0x20, 0x11);
+	port_byte_out(0xA0, 0x11);
+	port_byte_out(0x21, 0x20);
+	port_byte_out(0xA1, 0x28);
+	port_byte_out(0x21, 0x04);
+	port_byte_out(0xA1, 0x02);
+	port_byte_out(0x21, 0x01);
+	port_byte_out(0xA1, 0x01);
+	port_byte_out(0x21, 0x0);
+	port_byte_out(0xA1, 0x0); 
+
+	// Install the IRQs
+	set_idt_entry(32, (uint32_t)irq0);
+	set_idt_entry(33, (uint32_t)irq1);
+	set_idt_entry(34, (uint32_t)irq2);
+	set_idt_entry(35, (uint32_t)irq3);
+	set_idt_entry(36, (uint32_t)irq4);
+	set_idt_entry(37, (uint32_t)irq5);
+	set_idt_entry(38, (uint32_t)irq6);
+	set_idt_entry(39, (uint32_t)irq7);
+	set_idt_entry(40, (uint32_t)irq8);
+	set_idt_entry(41, (uint32_t)irq9);
+	set_idt_entry(42, (uint32_t)irq10);
+	set_idt_entry(43, (uint32_t)irq11);
+	set_idt_entry(44, (uint32_t)irq12);
+	set_idt_entry(45, (uint32_t)irq13);
+	set_idt_entry(46, (uint32_t)irq14);
+	set_idt_entry(47, (uint32_t)irq15);
 
 	set_idt();
 }
@@ -86,4 +119,18 @@ void isr_handler(struct registers_t r) {
 	kprint("\n");
 	kprint(exception_messages[r.int_no]);
 	kprint("\n");
+}
+void register_interrupt_handler(uint8_t n, isr_t handler) {
+	interrupt_handlers[n] = handler;
+}
+
+void irq_handler(struct registers_t r) {
+	if (r.int_no >= 40) port_byte_out(0xA0, 0x20); //slave
+	port_byte_out(0x20, 0x20); // master
+
+	// Handling the interrupt 
+	if (interrupt_handlers[r.int_no] != 0) {
+		isr_t handler = interrupt_handlers[r.int_no];
+		handler(r);
+	}
 }
