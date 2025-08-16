@@ -5,19 +5,23 @@
 
 int main() {
 	clear_screen();
+	kprint("Checkpoint1\n");
 	
 	isr_install();
+	kprint("Checkpoint2\n");
 	asm volatile("sti");
+
+	kprint("Checkpoint3\n");
 	init_timer(5);
 
-	/* Fill up the screen */
-	// int i = 0;
-	// for (i = 0; i < 24; i++) {
+	// TODO: Fix sti issue 
+	// asm volatile("sti");
+	kprint("Checkpoint4\n");
+
+	// for (int i = 0; i < 24; i++) {
 	// 	char str[255];
 	// 	int_to_ascii(i, str);
 	// 	kprint_at(str, 0, i);
 	// }
-	//
-	// kprint_at("This text forces the kernel to scroll. Row 0 will disappear. ", 60, 24);
-	// kprint("And with this text, the kernel will scroll again, and row 1 will disappear too!");
+
 }
