@@ -1,13 +1,15 @@
 #include "../drivers/screen.h"
 #include "../cpu/isr.h"
+#include "../drivers/shell.h"
 
 void kernel_init(){
 	clear_screen();
-	kprint("Starting Helios\n");
 
 	isr_install();
 	irq_install();
+	kprint("klutz@helios$ ");
 }
-int main() {
+
+int main(){
 	kernel_init();
 }

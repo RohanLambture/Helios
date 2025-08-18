@@ -38,6 +38,7 @@ irq_common_stub:
 
 	call irq_handler
 
+	; TODO: whether eax or ebx ?
 	pop eax
 	mov ds, ax
 	mov es, ax
