@@ -13,15 +13,15 @@ This is a minimal, educational operating system built from scratch for the x86 (
 - **Interrupts**: IDT setup, basic ISR/IRQ plumbing
 - **Screen Output**: Text‑mode screen driver for logging/printing
 - **Ports I/O**: Minimal port helpers for device interaction
-- **Build System**: `Makefile` with `nasm`, `clang` and `ld.lld`; QEMU for emulation
+- **Build System**: `Makefile` with `nasm`, `clang`/`i386-elf-gcc` and `ld.lld`; QEMU for emulation
 
 ---
 
 ### Prerequisites
 
-You will need an x86 cross‑compiling toolchain and QEMU. The build uses `clang` with `--target=i386-elf` and `ld.lld`.
+You will need an x86 cross‑compiling toolchain and QEMU. You can use either `clang` or `i386-elf-gcc`.
 
-- **Required tools**: `nasm`, `clang`, `ld.lld`, `qemu-system-i386`, `gdb`
+- **Required tools**: `nasm`, `clang` or `i386-elf-gcc`, `ld.lld` (with clang), `qemu-system-i386`, `gdb`
 
 ---
 
