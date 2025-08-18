@@ -18,6 +18,7 @@ static void timer_callback(struct registers_t regs){
 
 void init_timer(uint32_t frequency){
 	// set keyboard handler in interrupt array
+	asm volatile("cli");
 	register_interrupt_handler(IRQ0, timer_callback);
 
 	// TODO: hardcoded value of PIT base frequency ? 
@@ -26,7 +27,12 @@ void init_timer(uint32_t frequency){
 	uint8_t high = higher_8(divisor);
 
 
+	kprint("1");
 	port_byte_out(0x43, 0x36);
+	kprint("2");
 	port_byte_out(0x40, low);
+	kprint("3");
 	port_byte_out(0x40, high);
+	kprint("4");
+	asm volatile("sti");
 }

@@ -9,7 +9,9 @@ int main() {
 	isr_install();
 	asm volatile("sti");
 
+	kprint("kernel.c prev");
 	init_timer(50);
+	kprint("kernel.c post");
 
 	while(1){
 	}

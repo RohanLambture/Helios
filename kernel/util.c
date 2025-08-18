@@ -18,11 +18,11 @@ void memset(uint8_t *dest, uint8_t val, uint32_t len){
 }
 void int_to_ascii(int num, char *str){
 	int i = 0;
-	int is_negative = 0;
+	// int is_negative = 0;
 	
 	// Handle negative numbers
 	if(num < 0){
-		is_negative = 1;
+		// is_negative = 1;
 		num = -num;
 		str[i++] = '-';
 	}

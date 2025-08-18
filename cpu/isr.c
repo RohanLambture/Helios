@@ -123,8 +123,10 @@ void isr_handler(struct registers_t r) {
 	if(r.int_no <=19){
 		// critical exception , halt the system
 		kprint("critical exception occured.System halted\n");
-		__asm__ __volatile__("cli;hlt");
-		while(1);
+		asm volatile("cli");
+		asm volatile("hlt");
+		// __asm__ __volatile__("cli;hlt");
+		// while(1);
 	}
 }
 void register_interrupt_handler(uint8_t n, isr_t handler) {
