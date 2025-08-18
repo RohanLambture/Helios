@@ -1,19 +1,17 @@
 #include "timer.h"
-#include "../drivers/screen.h"
-#include "../drivers/ports.h"
-#include "../kernel/util.h"
+#include "../cpu/ports.h"
 #include "isr.h"
 
 uint32_t tick = 0;
 
 static void timer_callback(struct registers_t regs){
 	tick++;
-	kprint("Tick- ");
-	
-	char buff[256];
-	int_to_ascii(tick, buff);
-	kprint(buff);
-	kprint("\n");
+	// kprint("Tick- ");
+	//
+	// char buff[256];
+	// int_to_ascii(tick, buff);
+	// kprint(buff);
+	// kprint("\n");
 }
 
 void init_timer(uint32_t frequency){
@@ -27,12 +25,7 @@ void init_timer(uint32_t frequency){
 	uint8_t high = higher_8(divisor);
 
 
-	kprint("1");
 	port_byte_out(0x43, 0x36);
-	kprint("2");
 	port_byte_out(0x40, low);
-	kprint("3");
 	port_byte_out(0x40, high);
-	kprint("4");
-	asm volatile("sti");
 }

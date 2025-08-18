@@ -1,11 +1,10 @@
 #include "keyboard.h"
 
-
 #include "keyboard.h"
-#include "ports.h"
+#include "../cpu/ports.h"
 #include "../cpu/isr.h"
 #include "screen.h"
-#include "../kernel/util.h"
+#include "../libc/string.h"
 
 void print_letter(uint8_t scancode) {
 	switch (scancode) {
@@ -207,5 +206,3 @@ static void keyboard_callback(struct registers_t regs) {
 void init_keyboard() {
 	register_interrupt_handler(IRQ1, keyboard_callback); 
 }
-
-

@@ -1,13 +1,13 @@
 #include "../drivers/screen.h"
 #include "../cpu/isr.h"
-#include "../cpu/timer.h"
-#include "../drivers/keyboard.h"
 
-int main() {
+void kernel_init(){
 	clear_screen();
-	
+	kprint("Starting Helios\n");
+
 	isr_install();
-	asm volatile("sti");
-	// init_timer(50);
-	init_keyboard();
+	irq_install();
+}
+int main() {
+	kernel_init();
 }

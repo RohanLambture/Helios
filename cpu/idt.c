@@ -1,5 +1,4 @@
 #include "idt.h"
-#include "../kernel/util.h"
 
 struct idt_entry idt[IDT_ENTRIES];
 struct idt_register idt_reg;
