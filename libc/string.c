@@ -50,6 +50,7 @@ void append(char s[], char n) {
 
 void backspace(char s[]) {
 	int len = strlen(s);
+	if(len == 0)return;
 	s[len-1] = '\0';
 }
 
