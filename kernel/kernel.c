@@ -7,6 +7,11 @@ void kernel_init(){
 
 	isr_install();
 	irq_install();
+	kprint("           Helios OS v1.0 \n");
+	kprint("==========================================\n\n");
+	kprint("Commands available:\n");
+	kprint("  help   - Show this help\n");
+	kprint("  clear  - Clear screen\n\n");
 	kprint("klutz@helios$ ");
 }
 
