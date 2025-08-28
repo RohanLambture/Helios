@@ -29,8 +29,10 @@ static void keyboard_callback(struct registers_t regs) {
 	
 	if (scancode > SC_MAX) return;
 	if (scancode == BACKSPACE) {
-		backspace(key_buffer);
-		kprint_backspace();
+		if(strlen(key_buffer) > 0){
+			backspace(key_buffer);
+			kprint_backspace();
+		}
 	} else if (scancode == ENTER) {
 		kprint("\n");
 		user_input(key_buffer); /* kernel-controlled function */
