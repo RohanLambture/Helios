@@ -50,7 +50,7 @@
 # 	rm -rf kernel/*.o boot/*.bin drivers/*.o boot/*.o cpu/*.o
 
 # GCC toolchain
-C_SOURCES = $(wildcard kernel/*.c drivers/*.c cpu/*.c libc/*.c)
+C_SOURCES = $(wildcard kernel/*.c drivers/*.c cpu/*.c libc/*.c fs/*.c)
 HEADERS = $(wildcard kernel/*.h drivers/*.h cpu/*.h include/*.h)
 # Nice syntax for file extension replacement
 OBJ = ${C_SOURCES:.c=.o cpu/interrupt.o} 
@@ -95,4 +95,4 @@ debug: os-image.bin kernel.elf
 
 clean:
 	rm -rf *.bin *.dis *.o os-image.bin *.elf
-	rm -rf kernel/*.o boot/*.bin drivers/*.o boot/*.o cpu/*.o
+	rm -rf kernel/*.o boot/*.bin drivers/*.o boot/*.o cpu/*.o fs/*.o include/*.o libc/*.o

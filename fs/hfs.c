@@ -13,14 +13,14 @@ static uint8_t inode_bitmap[HFS_INODE_BITMAP_SIZE];
 static uint8_t fs_initialized = 0;
 static uint16_t current_dir = 0;
 
-void hfs_init(){
-	// clearing all structures
-	memset((uint8_t*)&superblock,0,sizeof( struct hfs_superblock));
-	memset((uint8_t*)inodes,0,sizeof(inodes));
-	memset((uint8_t*)data_blocks,0,sizeof(data_blocks));
-	memset(block_bitmap,0,HFS_BITMAP_SIZE);
-	memset(inode_bitmap,0,HFS_INODE_BITMAP_SIZE);
 
+void hfs_init(){
+	// // clearing all structures
+	// memset((uint8_t*)&superblock,0,sizeof( struct hfs_superblock));
+	// memset((uint8_t*)inodes,0,sizeof(inodes));
+	// memset((uint8_t*)data_blocks,0,sizeof(data_blocks));
+	// memset(block_bitmap,0,HFS_BITMAP_SIZE);
+	// memset(inode_bitmap,0,HFS_INODE_BITMAP_SIZE);
 
 	// superblock Initialize
 	superblock.magic_number = HFS_MAGIC;
@@ -62,7 +62,7 @@ static uint16_t find_free_block(){
 	return HFS_INVALID_BLOCK;
 }
 
-static uint16_t allocate_node(){
+static uint16_t allocate_inode(){
 	uint16_t free_inode = find_free_inode();
 	if(free_inode != HFS_INVALID_INODE){
 		inode_bitmap[free_inode] = 1;
@@ -83,16 +83,383 @@ static uint16_t allocate_block(){
 }
 
 static void free_inode(uint16_t inode_num){
-	if(inode_num >= HFS_MAX_FILES) return ;
-	// TODO : Complete this
+	if(inode_num >= HFS_MAX_FILES || inode_bitmap[inode_num] == 0) return ;
+	inode_bitmap[inode_num] = 0;
+	superblock.free_inodes++;
+
+	for(int i = 0; i< HFS_DIRECT_BLOCKS; i++){
+		if(inodes[inode_num].direct_block[i] == 0) continue;
+		block_bitmap[inodes[inode_num].direct_block[i]] = 0;
+		superblock.free_blocks++;
+		// FIXME : recursive ?
+	}
+	memset((uint8_t*)&inodes[inode_num],0,sizeof(struct hfs_inode));
+}
+static uint16_t find_file_in_dir(uint16_t dir_inode, const char* name) {
+	if(dir_inode >= HFS_MAX_FILES || inodes[dir_inode].type != HFS_TYPE_DIR) {
+		return HFS_INVALID_INODE;
+	}
+	// Search through all inodes for children of this directory
+	for(uint16_t i = 0; i < HFS_MAX_FILES; i++) {
+		if(inode_bitmap[i] && inodes[i].parent == dir_inode) {
+			if(strcmp(inodes[i].name, (char*)name) == 0) {
+				return i;
+			}
+		}
+	}
+
+	return HFS_INVALID_INODE;
 }
 
-// TODO : implement this methods
-static uint16_t find_file_in_dir(uint16_t dir_inode,const char *name);
-int hfs_create_file(const char *filename);
-int hfs_create_dir(const char *dirname);
-int hfs_write_file(const char *filename,const char *data,uint32_t size);
-int hfs_read_file(const char *filename, char *buffer, uint32_t buffer_size, uint32_t *bytes_read);
-int hfs_delete(const char *name);
-void hfs_list_dir();
-int hfs_change_dir(const char *dirname);
+int hfs_create_file(const char* filename) {
+	if(!fs_initialized) {
+		kprint("HFS: Filesystem not initialized\n");
+		return HFS_ERROR;
+	}
+
+	if(strlen(filename) >= HFS_MAX_FILENAME) {
+		kprint("HFS: Filename too long\n");
+		return HFS_ERROR;
+	}
+
+	// Check if file already exists
+	if(find_file_in_dir(current_dir, filename) != HFS_INVALID_INODE) {
+		kprint("HFS: File already exists\n");
+		return HFS_ERROR;
+	}
+
+	// Allocate new inode
+	uint16_t inode_num = allocate_inode();
+	if(inode_num == HFS_INVALID_INODE) {
+		kprint("HFS: No free inodes\n");
+		return HFS_ERROR;
+	}
+
+	// Initialize inode
+	inodes[inode_num].type = HFS_TYPE_FILE;
+	inodes[inode_num].size = 0;
+	inodes[inode_num].parent = current_dir;
+
+	// Copy filename
+	int i;
+	for(i = 0; i < strlen(filename) && i < HFS_MAX_FILENAME - 1; i++) {
+		inodes[inode_num].name[i] = filename[i];
+	}
+	inodes[inode_num].name[i] = '\0';
+
+	kprint("HFS: File created: ");
+	kprint(filename);
+	kprint("\n");
+
+	return HFS_SUCCESS;
+}
+
+// Create directory
+int hfs_create_dir(const char* dirname) {
+	if(!fs_initialized) {
+		kprint("HFS: Filesystem not initialized\n");
+		return HFS_ERROR;
+	}
+
+	if(strlen(dirname) >= HFS_MAX_FILENAME) {
+		kprint("HFS: Directory name too long\n");
+		return HFS_ERROR;
+	}
+
+	// Check if directory already exists
+	if(find_file_in_dir(current_dir, dirname) != HFS_INVALID_INODE) {
+		kprint("HFS: Directory already exists\n");
+		return HFS_ERROR;
+	}
+
+	// Allocate new inode
+	uint16_t inode_num = allocate_inode();
+	if(inode_num == HFS_INVALID_INODE) {
+		kprint("HFS: No free inodes\n");
+		return HFS_ERROR;
+	}
+
+	// Initialize inode
+	inodes[inode_num].type = HFS_TYPE_DIR;
+	inodes[inode_num].size = 0;
+	inodes[inode_num].parent = current_dir;
+
+	// Copy dirname
+	int i;
+	for(i = 0; i < strlen(dirname) && i < HFS_MAX_FILENAME - 1; i++) {
+		inodes[inode_num].name[i] = dirname[i];
+	}
+	inodes[inode_num].name[i] = '\0';
+
+	kprint("HFS: Directory created: ");
+	kprint(dirname);
+	kprint("\n");
+
+	return HFS_SUCCESS;
+}
+
+// Write to file
+int hfs_write_file(const char* filename, const char* data, uint32_t size) {
+	if(!fs_initialized) {
+		kprint("HFS: Filesystem not initialized\n");
+		return HFS_ERROR;
+	}
+
+	// Find file
+	uint16_t inode_num = find_file_in_dir(current_dir, filename);
+	if(inode_num == HFS_INVALID_INODE) {
+		kprint("HFS: File not found\n");
+		return HFS_ERROR;
+	}
+
+	if(inodes[inode_num].type != HFS_TYPE_FILE) {
+		kprint("HFS: Not a file\n");
+		return HFS_ERROR;
+	}
+
+	if(size > HFS_MAX_FILE_SIZE) {
+		kprint("HFS: File too large\n");
+		return HFS_ERROR;
+	}
+
+	// Calculate blocks needed
+	uint32_t blocks_needed = (size + HFS_BLOCK_SIZE - 1) / HFS_BLOCK_SIZE;
+	if(blocks_needed > HFS_DIRECT_BLOCKS) {
+		kprint("HFS: File too large for direct blocks\n");
+		return HFS_ERROR;
+	}
+
+	// Free existing blocks
+	for(int i = 0; i < HFS_DIRECT_BLOCKS; i++) {
+		if(inodes[inode_num].direct_block[i] != 0) {
+		block_bitmap[inodes[inode_num].direct_block[i]] = 0;
+		superblock.free_blocks++;
+		inodes[inode_num].direct_block[i] = 0;
+		}
+	}
+
+	// Allocate new blocks
+	for(uint32_t i = 0; i < blocks_needed; i++) {
+		uint16_t block_num = allocate_block();
+		if(block_num == HFS_INVALID_BLOCK) {
+			kprint("HFS: No free blocks\n");
+			return HFS_ERROR;
+		}
+		inodes[inode_num].direct_block[i] = block_num;
+	}
+
+	// Write data to blocks
+	uint32_t remaining = size;
+	uint32_t offset = 0;
+
+	for(uint32_t i = 0; i < blocks_needed && remaining > 0; i++) {
+		uint32_t to_write = (remaining > HFS_BLOCK_SIZE) ? HFS_BLOCK_SIZE : remaining;
+		uint16_t block_num = inodes[inode_num].direct_block[i];
+
+		for(uint32_t j = 0; j < to_write; j++) {
+			data_blocks[block_num][j] = data[offset + j];
+		}
+
+		offset += to_write;
+		remaining -= to_write;
+	}
+
+	inodes[inode_num].size = size;
+
+	kprint("HFS: Data written to file: ");
+	kprint(filename);
+	kprint("\n");
+
+	return HFS_SUCCESS;
+}
+
+// Read from file
+int hfs_read_file(const char* filename, char* buffer, uint32_t buffer_size, uint32_t* bytes_read) {
+	if(!fs_initialized) {
+		kprint("HFS: Filesystem not initialized\n");
+		return HFS_ERROR;
+	}
+
+	// Find file
+	uint16_t inode_num = find_file_in_dir(current_dir, filename);
+	if(inode_num == HFS_INVALID_INODE) {
+		kprint("HFS: File not found\n");
+		return HFS_ERROR;
+	}
+
+	if(inodes[inode_num].type != HFS_TYPE_FILE) {
+		kprint("HFS: Not a file\n");
+		return HFS_ERROR;
+	}
+
+	uint32_t file_size = inodes[inode_num].size;
+	uint32_t to_read = (file_size > buffer_size) ? buffer_size : file_size;
+
+	uint32_t remaining = to_read;
+	uint32_t offset = 0;
+	uint32_t block_index = 0;
+
+	while(remaining > 0 && block_index < HFS_DIRECT_BLOCKS) {
+		uint16_t block_num = inodes[inode_num].direct_block[block_index];
+		if(block_num == 0) break;
+
+		uint32_t from_block = (remaining > HFS_BLOCK_SIZE) ? HFS_BLOCK_SIZE : remaining;
+
+		for(uint32_t i = 0; i < from_block; i++) {
+			buffer[offset + i] = data_blocks[block_num][i];
+		}
+
+		offset += from_block;
+		remaining -= from_block;
+		block_index++;
+	}
+
+	*bytes_read = offset;
+	return HFS_SUCCESS;
+}
+
+// Delete file or directory
+int hfs_delete(const char* name) {
+	if(!fs_initialized) {
+		kprint("HFS: Filesystem not initialized\n");
+		return HFS_ERROR;
+	}
+
+	// Find file/directory
+	uint16_t inode_num = find_file_in_dir(current_dir, name);
+	if(inode_num == HFS_INVALID_INODE) {
+		kprint("HFS: File/Directory not found\n");
+		return HFS_ERROR;
+	}
+
+	// Don't allow deleting root directory
+	if(inode_num == 0) {
+		kprint("HFS: Cannot delete root directory\n");
+		return HFS_ERROR;
+	}
+
+	// If it's a directory, check if it's empty
+	if(inodes[inode_num].type == HFS_TYPE_DIR) {
+		for(uint16_t i = 0; i < HFS_MAX_FILES; i++) {
+			if(inode_bitmap[i] && inodes[i].parent == inode_num) {
+				kprint("HFS: Directory not empty\n");
+				return HFS_ERROR;
+			}
+		}
+	}
+
+	// Free the inode
+	free_inode(inode_num);
+
+	kprint("HFS: Deleted: ");
+	kprint(name);
+	kprint("\n");
+
+	return HFS_SUCCESS;
+}
+
+void hfs_list_dir() {
+	if(!fs_initialized) {
+		kprint("HFS: Filesystem not initialized\n");
+		return;
+	}
+
+	kprint("Directory listing:\n");
+
+	// Show current directory info
+	kprint("Current directory: ");
+	if(current_dir == 0) {
+		kprint("/");
+	} else {
+		kprint(inodes[current_dir].name);
+	}
+	kprint("\n");
+
+	// List all files/directories in current directory
+	int count = 0;
+	for(uint16_t i = 0; i < HFS_MAX_FILES; i++) {
+		if(inode_bitmap[i] && inodes[i].parent == current_dir) {
+		if(inodes[i].type == HFS_TYPE_DIR) {
+			kprint("[DIR]  ");
+		} else {
+			kprint("[FILE] ");
+		}
+		kprint(inodes[i].name);
+		if(inodes[i].type == HFS_TYPE_FILE) {
+			kprint(" (");
+			char size_str[16];
+			int_to_ascii(inodes[i].size, size_str);
+			kprint(size_str);
+			kprint(" bytes)");
+		}
+		kprint("\n");
+		count++;
+		}
+	}
+
+	if(count == 0) {
+		kprint("Directory is empty\n");
+	}
+
+	// Show filesystem stats
+	char stats[32];
+	int_to_ascii(superblock.free_inodes, stats);
+	kprint("Free inodes: ");
+	kprint(stats);
+	kprint(" / ");
+	int_to_ascii(superblock.total_inodes, stats);
+	kprint(stats);
+	kprint("\n");
+
+	int_to_ascii(superblock.free_blocks, stats);
+	kprint("Free blocks: ");
+	kprint(stats);
+	kprint(" / ");
+	int_to_ascii(superblock.total_blocks, stats);
+	kprint(stats);
+	kprint("\n");
+}
+
+int hfs_change_dir(const char* dirname) {
+	if(!fs_initialized) {
+		kprint("HFS: Filesystem not initialized\n");
+		return HFS_ERROR;
+	}
+
+	// Handle ".." (parent directory)
+	if(strcmp((char*)dirname, "..") == 0) {
+		if(current_dir != 0) {
+		current_dir = inodes[current_dir].parent;
+		kprint("HFS: Changed to parent directory\n");
+		} else {
+		kprint("HFS: Already at root directory\n");
+		}
+		return HFS_SUCCESS;
+	}
+
+	// Handle "/" (root directory)
+	if(strcmp((char*)dirname, "/") == 0) {
+		current_dir = 0;
+		kprint("HFS: Changed to root directory\n");
+		return HFS_SUCCESS;
+	}
+
+	// Find the directory
+	uint16_t inode_num = find_file_in_dir(current_dir, dirname);
+	if(inode_num == HFS_INVALID_INODE) {
+		kprint("HFS: Directory not found\n");
+		return HFS_ERROR;
+	}
+
+	if(inodes[inode_num].type != HFS_TYPE_DIR) {
+		kprint("HFS: Not a directory\n");
+		return HFS_ERROR;
+	}
+
+	current_dir = inode_num;
+	kprint("HFS: Changed directory to: ");
+	kprint(dirname);
+	kprint("\n");
+
+	return HFS_SUCCESS;
+}
