@@ -1,76 +1,69 @@
-### Helios — A tiny 32‑bit x86 OS
+# Helios OS
 
-This is a minimal, educational operating system built from scratch for the x86 (i386) architecture. It features a handcrafted bootloader, a 32‑bit protected‑mode kernel written in C and assembly, basic drivers, and a simple interrupt subsystem. 
+[![Language](https://img.shields.io/badge/language-C%20%26%20Assembly-orange.svg)](https://en.wikipedia.org/wiki/C_(programming_language))
+[![Platform](https://img.shields.io/badge/platform-x86-blue.svg)](https://en.wikipedia.org/wiki/X86)
 
-> This project is not intended for production use.
+A tiny 32-bit x86 operating system built from scratch for educational purposes.
+
+This is a minimal, educational operating system built from scratch for the x86 (i386) architecture. It features a custom bootloader, a 32-bit protected-mode kernel written in C and assembly, basic drivers, and a simple interrupt subsystem and basic shell.
+
+> This project is not intended for production use.And not yet tested on real hardware.
+
+---
+
+## Features
+
+-   **Bootloader**: Loads the kernel from disk and transitions control to 32-bit mode.
+-   **Protected Mode**: GDT setup and mode switch, with a flat memory model.
+-   **Interrupts**: IDT setup and basic ISR/IRQ plumbing.
+-   **Screen Output**: Text-mode screen driver for logging and printing.
+-   **Ports I/O**: Minimal port helpers for device interaction.
+-   **Filesystem**: Simple filesystem and disk driver.
+-   **Shell**: Basic shell and command interface.
+-   **Build System**: A `Makefile` using `nasm`, `clang`/`i386-elf-gcc`, and `ld.lld`.
 
 ---
 
-### Features
-
-- **Bootloader**: Loads the kernel from disk and transitions control to 32‑bit mode
-- **Protected Mode**: GDT setup and mode switch, flat memory model
-- **Interrupts**: IDT setup, basic ISR/IRQ plumbing
-- **Screen Output**: Text‑mode screen driver for logging/printing
-- **Ports I/O**: Minimal port helpers for device interaction
-- **Build System**: `Makefile` with `nasm`, `clang`/`i386-elf-gcc` and `ld.lld`; QEMU for emulation
-
----
+## Getting Started
 
 ### Prerequisites
 
-You will need an x86 cross‑compiling toolchain and QEMU. You can use either `clang` or `i386-elf-gcc`.
+You will need an x86 cross-compiling toolchain and QEMU. You can use either `clang` or `i386-elf-gcc`.
 
-- **Required tools**: `nasm`, `clang` or `i386-elf-gcc`, `ld.lld` (with clang), `qemu-system-i386`, `gdb`
+-   **Required tools**: `nasm`, `clang` or `i386-elf-gcc`, `ld.lld` (with clang), `qemu-system-i386`, `gdb`
 
----
+### Build and Run
 
-### Build and run
+-   **Build** the kernel and bootable image:
 
-- **Build** the kernel and bootable image:
+    ```bash
+    make
+    ```
 
-```bash
-make
-```
+-   **Run** in QEMU:
 
-- **Run** in QEMU:
+    ```bash
+    make run
+    ```
 
-```bash
-make run
-```
+    This launches `qemu-system-i386` with the generated `os-image.bin`.
 
-This launches `qemu-system-i386` with the generated `os-image.bin` as a floppy image.
+-   **Clean** build artifacts:
 
-- **Debug** with GDB:
-
-```bash
-make debug
-```
-
-This starts QEMU with a GDB server. In another terminal you can attach with:
-
-```bash
-gdb -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
-```
-
-- **Clean** build artifacts:
-
-```bash
-make clean
-```
+    ```bash
+    make clean
+    ```
 
 ---
 
-### Roadmap
+## Roadmap
 
-- Implement a simple filesystem and disk driver
-- Create a basic shell and command interface
-- Paging and virtual memory
-- Timer and keyboard interrupt handling
-- Simple memory allocator
-
+-   Paging and virtual memory
+-   Timer and keyboard interrupt handling
+-   A simple memory allocator
+-   An advanced disk driver
 ---
 
-### References
-- OSDev Wiki — [OSDev.org](https://wiki.osdev.org)
----
+## References
+
+-   OSDev Wiki — [OSDev.org](https://wiki.osdev.org)
