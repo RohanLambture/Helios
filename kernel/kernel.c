@@ -24,7 +24,8 @@ void kernel_init(){
 	kprint("  touch <file>  - Create empty file\n");
 	kprint("  write <file> <data> - Write to file\n");
 	kprint("  cat <file>    - Display file\n");
-	kprint("  rm <name>     - Delete file/dir\n\n");
+	kprint("  rm <name>     - Delete file/dir\n");
+	kprint("  debug     - Show filesystem debug info\n");
 	kprint("klutz@helios$ ");
 }
 

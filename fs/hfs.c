@@ -48,6 +48,45 @@ void hfs_init(){
 	kprint("HFS: File-system activiated\n");
 }
 
+void hfs_debug_info(void){
+	if(!fs_initialized) {
+		kprint("HFS: Filesystem not initialized\n");
+		return;
+	}
+
+	kprint("=== FILESYSTEM DEBUG ===\n");
+	kprint("Current dir: ");
+	char debug_str[16];
+	int_to_ascii(current_dir, debug_str);
+	kprint(debug_str);
+	kprint("\n");
+
+	kprint("All allocated inodes:\n");
+	for(int i = 0; i < HFS_MAX_FILES; i++) {
+		if(inode_bitmap[i]) {
+			int_to_ascii(i, debug_str);
+			kprint("Inode ");
+			kprint(debug_str);
+			kprint(": '");
+			kprint(inodes[i].name);
+			kprint("' (parent: ");
+			int_to_ascii(inodes[i].parent, debug_str);
+			kprint(debug_str);
+			kprint(", type: ");
+			int_to_ascii(inodes[i].type, debug_str);
+			kprint(debug_str);
+			kprint(")\n");
+		}
+	}
+
+	kprint("Free inodes: ");
+	int_to_ascii(superblock.free_inodes, debug_str);
+	kprint(debug_str);
+	kprint(" / ");
+	int_to_ascii(superblock.total_inodes, debug_str);
+	kprint(debug_str);
+	kprint("\n");
+}
 static uint16_t find_free_inode(){
 	for(int i = 0;i < HFS_MAX_FILES; i++){
 		if(inode_bitmap[i] == 0) return i;

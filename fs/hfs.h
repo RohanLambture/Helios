@@ -42,6 +42,7 @@ struct hfs_inode{
 
 
 void hfs_init(void);
+void hfs_debug_info(void);
 int hfs_create_file(const char *filename);
 int hfs_create_dir(const char *dirname);
 int hfs_write_file(const char *filename,const char *data,uint32_t size);

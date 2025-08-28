@@ -78,6 +78,7 @@ void user_input(char *input) {
 		kprint("  write <file> <data> - Write data to file\n");
 		kprint("  cat <file>    - Display file contents\n");
 		kprint("  rm <name>     - Delete file/directory\n");
+		kprint("  debug     - Show filesystem debug info\n");
 	} else if(strcmp(cmd, "FS_INIT") == 0) {
 		hfs_init();
 	} else if(strcmp(cmd, "LS") == 0) {
@@ -128,6 +129,8 @@ void user_input(char *input) {
 		} else {
 			hfs_delete(arg1);
 		}
+	} else if(strcmp(cmd, "DEBUG") == 0){
+		hfs_debug_info();
 	} else {
 		if(strlen(input) > 0) {
 			kprint("Unknown command: ");
