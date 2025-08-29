@@ -28,7 +28,6 @@ void hfs_debug_info(void){
 
 	kprint("All allocated inodes:\n");
 	for(int i = 0; i < HFS_MAX_FILES; i++) {
-		// if(inode_bitmap[i]) {
 		if(BIT_TEST(inode_bitmap, i)) {
 			int_to_ascii(i, debug_str);
 			kprint("Inode ");
@@ -55,14 +54,12 @@ void hfs_debug_info(void){
 }
 
 void hfs_init(){
-	// fs_initialized = 1;
-	// hfs_debug_info();
 	// // clearing all structures
-	memset((uint8_t*)&superblock,0,sizeof( struct hfs_superblock));
-	memset((uint8_t*)inodes,0,sizeof(inodes));
+	// memset((uint8_t*)&superblock,0,sizeof( struct hfs_superblock));
+	// memset((uint8_t*)inodes,0,sizeof(inodes));
 	// memset((uint8_t*)data_blocks,0,sizeof(data_blocks));
-	memset(block_bitmap,0,HFS_BITMAP_SIZE);
-	memset(inode_bitmap,0,HFS_INODE_BITMAP_SIZE);
+	// memset(block_bitmap,0,HFS_BITMAP_SIZE);
+	// memset(inode_bitmap,0,HFS_INODE_BITMAP_SIZE);
 
 	// superblock Initialize
 	superblock.magic_number = HFS_MAGIC;
@@ -71,11 +68,9 @@ void hfs_init(){
 	superblock.total_inodes = HFS_MAX_FILES;
 	superblock.free_inodes = HFS_MAX_FILES - 1;  // inode 0 for root
 
-	// block_bitmap[0] = 1; // marking as used (superblock)
 	BIT_SET(block_bitmap, 0); // mark block 0 used (superblock)
 
 	//root directory
-	// inode_bitmap[0] = 1;
 	BIT_SET(inode_bitmap, 0);
 	inodes[0].type = HFS_TYPE_DIR;
 	inodes[0].size = 0;
@@ -94,7 +89,6 @@ void hfs_init(){
 
 static uint16_t find_free_inode(){
 	for(int i = 1;i < HFS_MAX_FILES; i++){
-		// if(inode_bitmap[i] == 0) return i;
 		if(!BIT_TEST(inode_bitmap, i)) return i;
 	}
 	return HFS_INVALID_INODE;
@@ -102,7 +96,6 @@ static uint16_t find_free_inode(){
 
 static uint16_t find_free_block(){
 	for(int i = 1;i <HFS_TOTAL_BLOCKS ; i++){
-		// if(block_bitmap[i] == 0) return i;
 		if(!BIT_TEST(block_bitmap, i)) return i;
 	}
 	return HFS_INVALID_BLOCK;
@@ -111,7 +104,6 @@ static uint16_t find_free_block(){
 static uint16_t allocate_inode(){
 	uint16_t free_inode = find_free_inode();
 	if(free_inode != HFS_INVALID_INODE){
-		// inode_bitmap[free_inode] = 1;
 		BIT_SET(inode_bitmap, free_inode);
 		superblock.free_inodes--;
 		memset((uint8_t*)&inodes[free_inode],0,sizeof(struct hfs_inode));
@@ -122,7 +114,6 @@ static uint16_t allocate_inode(){
 static uint16_t allocate_block(){
 	uint16_t free_block = find_free_block();
 	if(free_block != HFS_INVALID_BLOCK){
-		// block_bitmap[free_block] = 1;
 		BIT_SET(block_bitmap, free_block);
 		superblock.free_blocks--;
 		memset(data_blocks[free_block],0,HFS_BLOCK_SIZE);
@@ -131,8 +122,6 @@ static uint16_t allocate_block(){
 }
 
 static void free_inode(uint16_t inode_num){
-	// if(inode_num >= HFS_MAX_FILES || inode_bitmap[inode_num] == 0) return ;
-	// inode_bitmap[inode_num] = 0;
 	if(inode_num >= HFS_MAX_FILES || !BIT_TEST(inode_bitmap, inode_num)) return ;
 	BIT_CLR(inode_bitmap, inode_num);
 	superblock.free_inodes++;
@@ -153,7 +142,6 @@ static uint16_t find_file_in_dir(uint16_t dir_inode, const char* name) {
 	}
 	// Search through all inodes for children of this directory
 	for(uint16_t i = 0; i < HFS_MAX_FILES; i++) {
-		// if(inode_bitmap[i] && inodes[i].parent == dir_inode) {
 		if(BIT_TEST(inode_bitmap, i) && inodes[i].parent == current_dir) {
 			if(strcmp(inodes[i].name, (char*)name) == 0) {
 				return i;

@@ -15,7 +15,7 @@ int get_offset_col(int offset);
  * Public Kernel API functions                            *
  **********************************************************/
 
-void kprint_at(char *message, int col, int row) {
+void kprint_at(const char *message, int col, int row) {
 	/* Set cursor if col/row are negative */
 	int offset;
 	if (col >= 0 && row >= 0)
@@ -36,7 +36,7 @@ void kprint_at(char *message, int col, int row) {
 	}
 }
 
-void kprint(char *message) {
+void kprint(const char *message) {
 	kprint_at(message, -1, -1);
 }
 
