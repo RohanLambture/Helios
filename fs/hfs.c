@@ -364,6 +364,37 @@ int hfs_read_file(const char* filename, char* buffer, uint32_t buffer_size, uint
 	return HFS_SUCCESS;
 }
 
+// Helper functionfor hfs_delete
+static void hfs_delete_inode(uint16_t inode_num) {
+	if (inode_num == HFS_INVALID_INODE || inode_num == 0) return; // never delete root
+
+	// If directory: collect children first
+	if (inodes[inode_num].type == HFS_TYPE_DIR) {
+		uint16_t children[HFS_MAX_FILES];
+		int child_count = 0;
+
+		for (uint16_t i = 0; i < HFS_MAX_FILES; i++) {
+			if (BIT_TEST(inode_bitmap, i) && inodes[i].parent == inode_num) {
+				children[child_count++] = i;
+			}
+		}
+
+		for (int j = 0; j < child_count; j++) {
+			hfs_delete_inode(children[j]);
+		}
+	}
+
+	// If we are deleting the directory we're currently in, move up first
+	if (current_dir == inode_num) {
+		if (inodes[inode_num].parent < HFS_MAX_FILES)
+			current_dir = inodes[inode_num].parent;
+		else
+			current_dir = 0;
+	}
+
+	// Finally free this inode
+	free_inode(inode_num);
+}
 // Delete file or directory
 int hfs_delete(const char* name) {
 	if(!fs_initialized) {
@@ -384,18 +415,8 @@ int hfs_delete(const char* name) {
 		return HFS_ERROR;
 	}
 
-	// If it's a directory, check if it's empty
-	if(inodes[inode_num].type == HFS_TYPE_DIR) {
-		for(uint16_t i = 0; i < HFS_MAX_FILES; i++) {
-			if( BIT_TEST(inode_bitmap, i) && inodes[i].parent == inode_num) {
-				kprint("HFS: Directory not empty\n");
-				return HFS_ERROR;
-			}
-		}
-	}
-
-	// Free the inode
-	free_inode(inode_num);
+	// Recursively delete
+	hfs_delete_inode(inode_num);
 
 	kprint("HFS: Deleted: ");
 	kprint(name);
