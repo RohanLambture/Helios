@@ -14,18 +14,19 @@ void kernel_init(){
 	kprint("Initializing filesystem...\n");
 	hfs_init();
 	kprint("\n");
-	kprint("Commands available:\n");
-	kprint("  help      - Show available commands\n");
-	kprint("  clear     - Clear screen\n");
-	kprint("  fs_init   - Initialize filesystem\n");
-	kprint("  ls        - List directory contents\n");
-	kprint("  mkdir <name>  - Create directory\n");
-	kprint("  cd <name>     - Change directory\n");
-	kprint("  touch <file>  - Create empty file\n");
-	kprint("  write <file> <data> - Write to file\n");
-	kprint("  cat <file>    - Display file\n");
-	kprint("  rm <name>     - Delete file/dir\n");
-	kprint("  debug     - Show filesystem debug info\n");
+	kprint("Available commands:\n");
+	kprint("  help                - Show this help\n");
+	kprint("  clear               - Clear screen\n");
+	kprint("  end                 - Shutdown system\n");
+	kprint("  fs_init             - Initialize filesystem\n");
+	kprint("  ls                  - List directory contents\n");
+	kprint("  mkdir <name>...     - Create directory(ies)\n");
+	kprint("  cd <name>           - Change directory\n");
+	kprint("  touch <name>...     - Create empty file(s)\n");
+	kprint("  write <file> <data> - Write data to file\n");
+	kprint("  cat <file>          - Display file contents\n");
+	kprint("  rm <name>...        - Delete file(s)/directory(ies)\n");
+	kprint("  debug               - Show filesystem debug info\n");
 	kprint("klutz@helios$ ");
 }
 
