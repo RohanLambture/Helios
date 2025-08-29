@@ -61,3 +61,13 @@ int strcmp(char s1[], char s2[]) {
 	}
 	return s1[i] - s2[i];
 }
+
+char* strcat(char *dest, const char *src) {
+	int dest_len = strlen(dest);
+	int i;
+	for (i = 0; src[i] != '\0'; i++) {
+		dest[dest_len + i] = src[i];
+	}
+	dest[dest_len + i] = '\0';
+	return dest;
+}

@@ -6,5 +6,6 @@ int strlen(const char s[]);
 void append(char s[],char n);
 void backspace(char s[]);
 int strcmp(char s1[],char s2[]);
+char* strcat(char *dest, const char *src);
 
 #endif
