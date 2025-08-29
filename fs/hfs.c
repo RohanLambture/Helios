@@ -127,11 +127,16 @@ static void free_inode(uint16_t inode_num){
 	superblock.free_inodes++;
 
 	for(int i = 0; i< HFS_DIRECT_BLOCKS; i++){
-		if(inodes[inode_num].direct_block[i] == 0) continue;
-		block_bitmap[inodes[inode_num].direct_block[i]] = 0;
-		if(inodes[inode_num].direct_block[i] == 0) continue;
-		BIT_CLR(block_bitmap, inodes[inode_num].direct_block[i]);
+		// if(inodes[inode_num].direct_block[i] == 0) continue;
+		// block_bitmap[inodes[inode_num].direct_block[i]] = 0;
+		// if(inodes[inode_num].direct_block[i] == 0) continue;
+		// BIT_CLR(block_bitmap, inodes[inode_num].direct_block[i]);
+		// superblock.free_blocks++;
+		uint16_t b = inodes[inode_num].direct_block[i];
+		if(b == 0) continue;
+		BIT_CLR(block_bitmap, b);
 		superblock.free_blocks++;
+		inodes[inode_num].direct_block[i] = 0;
 		// FIXME : recursive ?
 	}
 	memset((uint8_t*)&inodes[inode_num],0,sizeof(struct hfs_inode));
@@ -142,7 +147,7 @@ static uint16_t find_file_in_dir(uint16_t dir_inode, const char* name) {
 	}
 	// Search through all inodes for children of this directory
 	for(uint16_t i = 0; i < HFS_MAX_FILES; i++) {
-		if(BIT_TEST(inode_bitmap, i) && inodes[i].parent == current_dir) {
+		if(BIT_TEST(inode_bitmap, i) && inodes[i].parent == dir_inode) {
 			if(strcmp(inodes[i].name, (char*)name) == 0) {
 				return i;
 			}
@@ -382,7 +387,7 @@ int hfs_delete(const char* name) {
 	// If it's a directory, check if it's empty
 	if(inodes[inode_num].type == HFS_TYPE_DIR) {
 		for(uint16_t i = 0; i < HFS_MAX_FILES; i++) {
-			if(inode_bitmap[i] && inodes[i].parent == inode_num) {
+			if( BIT_TEST(inode_bitmap, i) && inodes[i].parent == inode_num) {
 				kprint("HFS: Directory not empty\n");
 				return HFS_ERROR;
 			}
@@ -419,22 +424,23 @@ void hfs_list_dir() {
 	// List all files/directories in current directory
 	int count = 0;
 	for(uint16_t i = 0; i < HFS_MAX_FILES; i++) {
-		if(inode_bitmap[i] && inodes[i].parent == current_dir) {
-		if(inodes[i].type == HFS_TYPE_DIR) {
-			kprint("[DIR]  ");
-		} else {
-			kprint("[FILE] ");
-		}
-		kprint(inodes[i].name);
-		if(inodes[i].type == HFS_TYPE_FILE) {
-			kprint(" (");
-			char size_str[16];
-			int_to_ascii(inodes[i].size, size_str);
-			kprint(size_str);
-			kprint(" bytes)");
-		}
-		kprint("\n");
-		count++;
+		// if(inode_bitmap[i] && inodes[i].parent == current_dir) {
+		if(BIT_TEST(inode_bitmap, i) && inodes[i].parent == current_dir){
+			if(inodes[i].type == HFS_TYPE_DIR) {
+				kprint("[DIR]  ");
+			} else {
+				kprint("[FILE] ");
+			}
+			kprint(inodes[i].name);
+			if(inodes[i].type == HFS_TYPE_FILE) {
+				kprint(" (");
+				char size_str[16];
+				int_to_ascii(inodes[i].size, size_str);
+				kprint(size_str);
+				kprint(" bytes)");
+			}
+			kprint("\n");
+			count++;
 		}
 	}
 
