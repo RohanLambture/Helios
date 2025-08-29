@@ -12,6 +12,13 @@
 #define HFS_BITMAP_SIZE		((HFS_TOTAL_BLOCKS + 7) / 8) // to track data blocks' availability
 #define HFS_INODE_BITMAP_SIZE	((HFS_MAX_FILES + 7 ) / 8)   // to track inodes' availability
 
+#define BIT_IDX(i)		((i) >> 3)
+#define BIT_OFS(i)		((i) & 7)
+#define BIT_MASK(i)		(1u << BIT_OFS(i))
+#define BIT_TEST(a,i)		(((a)[BIT_IDX(i)] >> BIT_OFS(i)) & 1u)
+#define BIT_SET(a,i)		((a)[BIT_IDX(i)] |=  BIT_MASK(i))
+#define BIT_CLR(a,i)		((a)[BIT_IDX(i)] &= ~BIT_MASK(i))
+
 #define HFS_MAGIC		0x48465321  // "HFS!"
 #define HFS_TYPE_FILE		1
 #define HFS_TYPE_DIR		2
