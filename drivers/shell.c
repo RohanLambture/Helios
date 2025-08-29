@@ -3,44 +3,37 @@
 #include "../libc/string.h"
 #include "../fs/hfs.h"
 
-static void parse_command(char *input, char *cmd, char *arg1, char *arg2) {
-	int i = 0, j = 0;
+#define MAX_ARGS 16
 
-	// Clear buffers
-	for(int k = 0; k < 32; k++) {
-		cmd[k] = '\0';
-		arg1[k] = '\0';
-		arg2[k] = '\0';
+static int parse_command(char *input, char *argv[]) {
+	int argc = 0;
+	char *p = input;
+
+	// Skip leading whitespace
+	while (*p == ' ') {
+		p++;
 	}
 
-	// Skip leading spaces
-	while(input[i] == ' ') i++;
+	while (*p != '\0' && argc < MAX_ARGS) {
+		argv[argc++] = p;
 
-	// Extract command
-	while(input[i] != ' ' && input[i] != '\0' && j < 31) {
-		cmd[j++] = input[i++];
+		// Go to the end of the argument
+		while (*p != ' ' && *p != '\0') {
+			p++;
+		}
+
+		// Null-terminate the argument
+		if (*p == ' ') {
+			*p = '\0';
+			p++;
+		}
+
+		// Skip more whitespace
+		while (*p == ' ') {
+			p++;
+		}
 	}
-	cmd[j] = '\0';
-
-	// Skip spaces
-	while(input[i] == ' ') i++;
-
-	// Extract first argument
-	j = 0;
-	while(input[i] != ' ' && input[i] != '\0' && j < 31) {
-		arg1[j++] = input[i++];
-	}
-	arg1[j] = '\0';
-
-	// Skip spaces
-	while(input[i] == ' ') i++;
-
-	// Extract second argument (rest of the line)
-	j = 0;
-	while(input[i] != '\0' && j < 255) {
-		arg2[j++] = input[i++];
-	}
-	arg2[j] = '\0';
+	return argc;
 }
 
 // Convert string to uppercase for case-insensitive comparison
@@ -53,83 +46,105 @@ static void to_upper(char *str) {
 }
 
 void user_input(char *input) {
-	char cmd[32], arg1[32], arg2[256];
+    char *argv[MAX_ARGS];
+    int argc;
 
-	parse_command(input, cmd, arg1, arg2);
-	to_upper(cmd);
+    argc = parse_command(input, argv);
 
-	if (strcmp(cmd, "END") == 0) {
+    if (argc == 0) {
+        kprint("klutz@helios$ ");
+        return;
+    }
+
+    to_upper(argv[0]);
+
+	if (strcmp(argv[0], "END") == 0) {
 		kprint("Stopping the CPU. Bye!\n");
 		asm volatile("hlt");
-	} else if(strcmp(cmd, "CLEAR") == 0) {
+	} else if(strcmp(argv[0], "CLEAR") == 0) {
 		clear_screen();
 		kprint("klutz@helios$ ");
 		return;
-	} else if(strcmp(cmd, "HELP") == 0) {
+	} else if(strcmp(argv[0], "HELP") == 0) {
 		kprint("Available commands:\n");
-		kprint("  help          - Show this help\n");
-		kprint("  clear         - Clear screen\n");
-		kprint("  end           - Shutdown system\n");
-		kprint("  fs_init       - Initialize filesystem\n");
-		kprint("  ls            - List directory contents\n");
-		kprint("  mkdir <name>  - Create directory\n");
-		kprint("  cd <name>     - Change directory\n");
-		kprint("  touch <name>  - Create empty file\n");
+		kprint("  help                - Show this help\n");
+		kprint("  clear               - Clear screen\n");
+		kprint("  end                 - Shutdown system\n");
+		kprint("  fs_init             - Initialize filesystem\n");
+		kprint("  ls                  - List directory contents\n");
+		kprint("  mkdir <name>...     - Create directory(ies)\n");
+		kprint("  cd <name>           - Change directory\n");
+		kprint("  touch <name>...     - Create empty file(s)\n");
 		kprint("  write <file> <data> - Write data to file\n");
-		kprint("  cat <file>    - Display file contents\n");
-		kprint("  rm <name>     - Delete file/directory\n");
-		kprint("  debug     - Show filesystem debug info\n");
-	} else if(strcmp(cmd, "FS_INIT") == 0) {
+		kprint("  cat <file>          - Display file contents\n");
+		kprint("  rm <name>...        - Delete file(s)/directory(ies)\n");
+		kprint("  debug               - Show filesystem debug info\n");
+	} else if(strcmp(argv[0], "FS-INIT") == 0) {
 		hfs_init();
-	} else if(strcmp(cmd, "LS") == 0) {
+	} else if(strcmp(argv[0], "LS") == 0) {
 		hfs_list_dir();
-	} else if(strcmp(cmd, "MKDIR") == 0) {
-		if(strlen(arg1) == 0) {
-			kprint("Usage: mkdir <directory_name>\n");
-		} else {
-			hfs_create_dir(arg1);
+	} else if(strcmp(argv[0], "MKDIR") == 0) {
+		if (argc < 2) {
+		kprint("Usage: mkdir <directory_name>...\n");
+	} else {
+		for (int i = 1; i < argc; i++) {
+			hfs_create_dir(argv[i]);
 		}
-	} else if(strcmp(cmd, "CD") == 0) {
-		if(strlen(arg1) == 0) {
+	}
+	} else if(strcmp(argv[0], "CD") == 0) {
+		if(argc < 2) {
 			kprint("Usage: cd <directory_name>\n");
 		} else {
-			hfs_change_dir(arg1);
+			hfs_change_dir(argv[1]);
 		}
-	} else if(strcmp(cmd, "TOUCH") == 0) {
-		if(strlen(arg1) == 0) {
-			kprint("Usage: touch <filename>\n");
+	} else if(strcmp(argv[0], "TOUCH") == 0) {
+		if (argc < 2) {
+			kprint("Usage: touch <filename>...\n");
 		} else {
-			hfs_create_file(arg1);
+			for (int i = 1; i < argc; i++) {
+				hfs_create_file(argv[i]);
+			}
 		}
-	} else if(strcmp(cmd, "WRITE") == 0) {
-		if(strlen(arg1) == 0 || strlen(arg2) == 0) {
+	} else if(strcmp(argv[0], "WRITE") == 0) {
+		if(argc < 3) {
 			kprint("Usage: write <filename> <data>\n");
 		} else {
-			if(hfs_write_file(arg1, arg2, strlen(arg2)) == 0) {
+			// Concatenate the rest of the arguments into the data
+			char data[256] = {0};
+			int len = 0;
+			for (int i = 2; i < argc; i++) {
+				strcat(data, argv[i]);
+				if (i < argc - 1) {
+				strcat(data, " ");
+				}
+			}
+			if(hfs_write_file(argv[1], data, strlen(data)) == 0) {
 				kprint("File written successfully\n");
 			}
 		}
-	} else if(strcmp(cmd, "CAT") == 0) {
-		if(strlen(arg1) == 0) {
+	} else if(strcmp(argv[0], "CAT") == 0) {
+		if(argc < 2) {
 			kprint("Usage: cat <filename>\n");
 		} else {
 			char buffer[1024];
 			uint32_t bytes_read = 0;
 
-			if(hfs_read_file(arg1, buffer, sizeof(buffer) - 1, &bytes_read) == 0) {
+			if(hfs_read_file(argv[1], buffer, sizeof(buffer) - 1, &bytes_read) == 0) {
 				buffer[bytes_read] = '\0';
 				kprint("File contents:\n");
 				kprint(buffer);
 				kprint("\n");
 			}
 		}
-	} else if(strcmp(cmd, "RM") == 0) {
-		if(strlen(arg1) == 0) {
-			kprint("Usage: rm <filename_or_directory>\n");
+	} else if(strcmp(argv[0], "RM") == 0) {
+		if (argc < 2) {
+			kprint("Usage: rm <filename_or_directory>...\n");
 		} else {
-			hfs_delete(arg1);
+			for (int i = 1; i < argc; i++) {
+				hfs_delete(argv[i]);
+			}
 		}
-	} else if(strcmp(cmd, "DEBUG") == 0){
+	} else if(strcmp(argv[0], "DEBUG") == 0){
 		hfs_debug_info();
 	} else {
 		if(strlen(input) > 0) {
