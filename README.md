@@ -17,6 +17,7 @@ This is a minimal, educational operating system built from scratch for the x86 (
 -   **Protected Mode**: GDT setup and mode switch, with a flat memory model.
 -   **Interrupts**: IDT setup and basic ISR/IRQ plumbing.
 -   **Screen Output**: Text-mode screen driver for logging and printing.
+-   **Timer and Keyboard Interrupt Handling**: Basic interrupt handling for timer and keyboard.
 -   **Ports I/O**: Minimal port helpers for device interaction.
 -   **Filesystem**: Simple filesystem and disk driver.
 -   **Shell**: Basic shell and command interface.
@@ -59,9 +60,10 @@ You will need an x86 cross-compiling toolchain and QEMU. You can use either `cla
 ## Roadmap
 
 -   Paging and virtual memory
--   Timer and keyboard interrupt handling
 -   A simple memory allocator
 -   An advanced disk driver
+-   Support for network protocols and devices
+-   Basic graphical capabilities
 ---
 
 ## References
