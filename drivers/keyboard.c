@@ -22,19 +22,25 @@ const char* sc_name[] = { "ERROR", "Esc", "1", "2", "3", "4", "5", "6",
 	"LShift", "\\", "Z", "X", "C", "V", "B", "N", "M", ",", ".",
 	"/", "RShift", "Keypad *", "LAlt", "Spacebar" };
 
-const char sc_ascii[] = { '?', '?', '1', '2', '3', '4', '5', '6',
-	'7', '8', '9', '0', '-', '=', '?', '?', 'q', 'w', 'e', 'r', 't', 'y',
-	'u', 'i', 'o', 'p', '[', ']', '?', '?', 'a', 's', 'd', 'f', 'g',
-	'h', 'j', 'k', 'l', ';', '\'', '`', '?', '\\', 'z', 'x', 'c', 'v',
-	'b', 'n', 'm', ',', '.', '/', '?', '?', '?', ' '};
+const char sc_ascii[] = {
+	'?', '?', '1', '2', '3', '4', '5', '6',
+	'7', '8', '9', '0', '-', '=', '?', '?',
+	'q', 'w', 'e', 'r', 't', 'y', 'u', 'i',
+	'o', 'p', '[', ']', '?', '?', 'a', 's',
+	'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
+	'\'', '`', '?', '\\', 'z', 'x', 'c', 'v',
+	'b', 'n', 'm', ',', '.', '/', '?', '?',
+	'?', ' '};
 
-const char sc_ascii_shifted[] = { '?', '?', '!', '@', '#', 
- '%', '^',
-	'&', '*', '(', ')', '_', '+', '?', '?', 'Q', 'W', 'E', 'R', 'T', 'Y',
-	'U', 'I', 'O', 'P', '{', '}', '?', '?', 'A', 'S', 'D', 'F', 'G',
-	'H', 'J', 'K', 'L', ':', '"', '~', '?', '|', 'Z', 'X', 'C', 'V',
-	'B', 'N', 'M', '<', '>', '?', '?', '?', '?', ' ' };
-
+const char sc_ascii_shifted[] = {
+	'?', '?', '!', '@', '#', '$', '%', '^',
+	'&', '*', '(', ')', '_', '+', '?', '?',
+	'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I',
+	'O', 'P', '{', '}', '?', '?', 'A', 'S',
+	'D', 'F', 'G', 'H', 'J', 'K', 'L', ':',
+	'"', '~', '?', '|', 'Z', 'X', 'C', 'V',
+	'B', 'N', 'M', '<', '>', '?', '?', '?',
+	'?', ' '};
 
 static void keyboard_callback(struct registers_t regs) {
 	uint8_t scancode = port_byte_in(0x60);
@@ -48,7 +54,7 @@ static void keyboard_callback(struct registers_t regs) {
 		return;
 	}
 
-	if (scancode > SC_MAX) return;
+	if (scancode > SC_MAX || scancode & 0x80) return;
 
 	if (scancode == BACKSPACE) {
 		if (strlen(key_buffer) > 0) {
@@ -58,20 +64,22 @@ static void keyboard_callback(struct registers_t regs) {
 	}
 	else if (scancode == ENTER) {
 		kprint("\n");
-		user_input(key_buffer); /* kernel-controlled function */
+		user_input(key_buffer);
 		key_buffer[0] = '\0';
 	}
 	else {
 		char letter;
 		if (shift_pressed) {
-			letter = sc_ascii_shifted[(int)scancode];
+			letter = sc_ascii_shifted[scancode];
+		} else {
+			letter = sc_ascii[scancode];
 		}
-		else {
-			letter = sc_ascii[(int)scancode];
+
+		if (letter != '?') {
+			char str[2] = { letter, '\0' };
+			append(key_buffer, letter);
+			kprint(str);
 		}
-		char str[2] = { letter, '\0' };
-		append(key_buffer, letter);
-		kprint(str);
 	}
 }
 
