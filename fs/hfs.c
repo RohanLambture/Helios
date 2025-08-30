@@ -83,8 +83,6 @@ void hfs_init(){
 
 	current_dir = 0;
 	fs_initialized = 1;
-
-	kprint("HFS: File-system activiated\n");
 }
 
 static uint16_t find_free_inode(){

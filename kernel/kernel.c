@@ -10,15 +10,14 @@ void kernel_init(){
 	irq_install();
 
 	kprint("           Helios OS v1.0 \n");
-	kprint("==========================================\n\n");
-	kprint("Initializing filesystem...\n");
+	kprint("==========================================\n");
 	hfs_init();
 	kprint("\n");
 	kprint("Available commands:\n");
 	kprint("  help                - Show this help\n");
 	kprint("  clear               - Clear screen\n");
 	kprint("  end                 - Shutdown system\n");
-	kprint("  fs_init             - Initialize filesystem\n");
+	kprint("  fs-init             - Initialize filesystem\n");
 	kprint("  ls                  - List directory contents\n");
 	kprint("  mkdir <name>...     - Create directory(ies)\n");
 	kprint("  cd <name>           - Change directory\n");
